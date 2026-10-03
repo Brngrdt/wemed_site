@@ -560,6 +560,11 @@ details.data textarea{margin-top:10px;font:12px/1.4 ui-monospace,Menlo,Consolas,
 .hbgrid:not(.wk) .hc{height:40px;border-radius:10px}
 .sheet .sub{margin:-4px 2px 0}
 
+.remrow{display:flex;align-items:center;gap:10px;font-weight:600;padding:6px 0}.remrow input{width:22px;height:22px;accent-color:var(--accent,currentColor)}
+#remBody{display:flex;flex-direction:column;gap:12px}
+.remrow input{padding:0;border:0;background:none;box-shadow:none;flex:none}
+.remsec{display:flex;flex-direction:column;gap:8px;padding:12px;border:1px solid var(--line);border-radius:18px}.remsec .sub{margin:0}
+
 </style>
 </head>
 <body data-screen="cal">
@@ -781,6 +786,21 @@ details.data textarea{margin-top:10px;font:12px/1.4 ui-monospace,Menlo,Consolas,
     <div class="pal" id="pal" role="group" aria-label="Цветовая тема"></div>
   </div>
 </div>
+<div class="overlay" id="tmOv" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="tmTitle">
+    <div class="sh-head"><h2 class="h sm" id="tmTitle">Время задачи</h2><button type="button" class="btn ghost sm" data-close>Закрыть</button></div>
+    <p class="sub" id="tmText" style="overflow-wrap:anywhere"></p>
+    <div><label class="lab" for="tmIn">Во сколько</label><input id="tmIn" type="time"></div>
+    <p class="sub">Бот в Telegram напомнит о задаче заранее. За сколько минут — настраивается в «Напоминаниях».</p>
+    <div class="row"><button type="button" class="btn big" id="tmSave">Сохранить</button><button type="button" class="btn ghost" id="tmClear">Убрать время</button></div>
+  </div>
+</div>
+<div class="overlay" id="remOv" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="remTitle">
+    <div class="sh-head"><h2 class="h sm" id="remTitle">Напоминания</h2><button type="button" class="btn ghost sm" data-close>Готово</button></div>
+    <div id="remBody"></div>
+  </div>
+</div>
 <!-- Профиль, синхронизация, данные -->
 <div class="overlay" id="acOv" hidden>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="acTitle">
@@ -823,7 +843,7 @@ function cap(s){return s.charAt(0).toUpperCase()+s.slice(1)}
 function uid(){return Math.random().toString(36).slice(2,9)+Date.now().toString(36).slice(-4)}
 function dayNum(d){return Math.floor(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/864e5)}
 function plural(n,f){var a=Math.abs(n)%100,b=a%10;if(a>10&&a<20)return f[2];if(b>1&&b<5)return f[1];if(b===1)return f[0];return f[2]}
-var DATE_RE=/^\d{4}-\d{2}-\d{2}$/;
+var DATE_RE=/^\d{4}-\d{2}-\d{2}$/,TIME_RE=/^([01]\d|2[0-3]):[0-5]\d$/;
 
 var MONTHS=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
 var MONTHS_GEN=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
@@ -890,7 +910,7 @@ function migrate(o){
 }
 function normalize(o){
   var b=blank();
-  b.tasks=(Array.isArray(o.tasks)?o.tasks:[]).filter(function(t){return t&&typeof t.text==='string'&&DATE_RE.test(t.date||'')}).map(function(t){var sc=scopeOk(t.scope),en=(sc==='range'&&DATE_RE.test(t.end||'')&&t.end>=t.date)?t.end:null;if(sc==='range'&&!en)sc='day';return {id:String(t.id||uid()),text:t.text.slice(0,140),date:t.date,scope:sc,end:en,cat:catBy(t.cat).id,pri:(t.pri===2||t.pri===3)?t.pri:1,done:!!t.done,doneAt:t.done?(t.doneAt||t.date):null,ts:+t.ts||0,demo:!!t.demo}});
+  b.tasks=(Array.isArray(o.tasks)?o.tasks:[]).filter(function(t){return t&&typeof t.text==='string'&&DATE_RE.test(t.date||'')}).map(function(t){var sc=scopeOk(t.scope),en=(sc==='range'&&DATE_RE.test(t.end||'')&&t.end>=t.date)?t.end:null;if(sc==='range'&&!en)sc='day';return {id:String(t.id||uid()),text:t.text.slice(0,140),date:t.date,scope:sc,end:en,cat:catBy(t.cat).id,pri:(t.pri===2||t.pri===3)?t.pri:1,time:TIME_RE.test(t.time||'')?t.time:'',done:!!t.done,doneAt:t.done?(t.doneAt||t.date):null,ts:+t.ts||0,demo:!!t.demo}});
   b.events=(Array.isArray(o.events)?o.events:[]).filter(function(e){return e&&DATE_RE.test(e.date||'')}).map(function(e){var en=(DATE_RE.test(e.end||'')&&e.end>e.date)?e.end:null;return {id:String(e.id||uid()),date:e.date,end:en,type:String(e.type||'imp').slice(0,40),title:String(e.title||'').slice(0,60),ts:+e.ts||0,demo:!!e.demo}});
   b.tx=(Array.isArray(o.tx)?o.tx:[]).filter(function(t){return t&&isFinite(+t.amount)&&+t.amount>0&&DATE_RE.test(t.date||'')}).map(function(t){return {id:String(t.id||uid()),date:t.date,type:t.type==='in'?'in':'out',cat:String(t.cat||'Прочее').slice(0,40),amount:+t.amount,note:String(t.note||'').slice(0,80),ts:+t.ts||0,demo:!!t.demo}});
   b.focus=(Array.isArray(o.focus)?o.focus:[]).filter(function(f){return f&&DATE_RE.test(f.date||'')&&+f.min>0}).map(function(f){return {id:String(f.id||uid()),date:f.date,min:Math.round(+f.min),taskId:String(f.taskId||''),taskText:String(f.taskText||'').slice(0,140),cat:f.cat?catBy(f.cat).id:null,ts:+f.ts||0,demo:!!f.demo}});
@@ -1078,15 +1098,16 @@ function taskMeta(t){
 function taskRow(t,o){
   o=o||{};var c=catBy(t.cat),tk=ymd(today()),due=tkDue(t),over=!t.done&&due<tk;
   var sc=t.scope==='day'?'':'<span class="sc">'+SC_NAME[t.scope]+'</span>',info=taskMeta(t),mv='';
+  if(t.time&&(t.done||o.compact))sc+='<span class="sc">⏰ '+t.time+'</span>';
   if(!t.done&&!o.compact){
-    if(t.scope==='day')mv='<button type="button" class="mv" '+(t.date===tk?'data-tmr':'data-tdy')+'="'+t.id+'">'+(t.date===tk?'Перенести на завтра':'Перенести на сегодня')+'</button>';
+    if(t.scope==='day')mv='<button type="button" class="mv" data-ttime="'+t.id+'">'+(t.time?'⏰ '+t.time:'+ Время')+'</button>'+'<button type="button" class="mv" '+(t.date===tk?'data-tmr':'data-tdy')+'="'+t.id+'">'+(t.date===tk?'Перенести на завтра':'Перенести на сегодня')+'</button>';
     else if(over&&(t.scope==='week'||t.scope==='month'))mv='<button type="button" class="mv" data-tcur="'+t.id+'">'+(t.scope==='week'?'Перенести на эту неделю':'Перенести на этот месяц')+'</button>';
   }
   return '<li class="task'+(t.done?' done':'')+'"><button type="button" class="chk" role="checkbox" aria-checked="'+t.done+'" data-chk="'+t.id+'" aria-label="Выполнено: '+esc(t.text)+'">'+CHECK+'</button>'
    +'<div class="tx"><span class="tt">'+esc(t.text)+'</span><span class="meta">'+sc+(info?'<span>'+esc(info)+'</span>':'')+'<span class="cat" style="--c:var('+c.tok+')"><i class="dot"></i>'+esc(c.name)+'</span>'+(t.pri>1?'<span class="pri p'+t.pri+'">'+PRI[t.pri]+'</span>':'')+(over?'<span class="late">'+(t.scope==='day'?'срок был '+esc(shortDate(t.date).toLowerCase()):'срок прошёл '+esc(dm(due)))+'</span>':'')+'</span>'+mv+'</div>'
    +'<button type="button" class="del" data-del="'+t.id+'" aria-label="Удалить задачу">&times;</button></li>';
 }
-function addTask(text,date,cat,pri,scope,end){var id=uid(),sc=scopeOk(scope);S.tasks.push({id:id,text:text,date:date,scope:sc,end:sc==='range'?end:null,cat:cat,pri:pri,done:false,doneAt:null,ts:Date.now(),demo:false});save();return id}
+function addTask(text,date,cat,pri,scope,end,time){var id=uid(),sc=scopeOk(scope);S.tasks.push({id:id,text:text,date:date,scope:sc,end:sc==='range'?end:null,cat:cat,pri:pri,time:(sc==='day'&&TIME_RE.test(time||''))?time:'',done:false,doneAt:null,ts:Date.now(),demo:false});save();return id}
 function toggleTask(id){
   var t=S.tasks.filter(function(x){return x.id===id})[0];if(!t)return;
   t.done=!t.done;t.doneAt=t.done?ymd(today()):null;save();
@@ -1298,7 +1319,7 @@ function addTaskInline(){
   }
   var p=parseQuick(raw,o);
   if(!p.valid){toast(p.hint||'Впишите, что нужно сделать.');return}
-  var id=addTask(p.text,p.date,p.cat,p.pri,p.scope,p.end);ui.tcat=p.cat;
+  var id=addTask(p.text,p.date,p.cat,p.pri,p.scope,p.end,p.time);ui.tcat=p.cat;
   inp.value='';ui.scope=p.scope;ui.tsel=p.date;
   renderTasks();updateNav();
   toast('Задача добавлена','Отменить',function(){S.tasks=S.tasks.filter(function(t){return t.id!==id});tomb(id);save();refresh()});
@@ -1508,6 +1529,12 @@ function isMoneyStart(pre,rest){
     &&!/^\d{1,2}\s+(янв|фев|мар|апр|ма[яй]|июн|июл|авг|сен|окт|ноя|дек)/i.test(rest)
     &&!/^\d{1,2}[.\/](0?[1-9]|1[0-2])(?:[.\/]\d{2,4})?(\s|$)/.test(pre);
 }
+function extractTime(text){
+  var m=text.match(/(^|\s)(?:в\s+|к\s+)?([01]?\d|2[0-3])[:.]([0-5]\d)(?=\s|$|[,;!?])/i);
+  if(!m)return {time:'',text:text};
+  var h=('0'+m[2]).slice(-2),t=h+':'+m[3];
+  return {time:t,text:(text.slice(0,m.index)+' '+text.slice(m.index+m[0].length)).replace(/\s+/g,' ').trim()};
+}
 function parseQuick(raw,o){
   var s=String(raw).replace(/\s+/g,' ').trim();
   var out={type:'task',date:o.date||o.defDate,end:null,scope:null,auto:!o.date,dateExp:false,text:'',cat:null,pri:1,amount:0,ev:o.ev||'imp',valid:false,hint:''};
@@ -1556,6 +1583,7 @@ function parseQuick(raw,o){
     out.cat=o.cat||g||'Прочее';
     if(FIN[type].indexOf(out.cat)<0)out.cat='Прочее';
   }else if(type==='task'){
+    var tm=extractTime(rest);out.time=tm.time;rest=tm.text;
     var pr=extractPri(rest);out.pri=pr.pri;rest=pr.text;
     var sw=extractScopeWords(rest);rest=sw.text;
     if(sw.scope&&!out.scope){
@@ -1636,7 +1664,7 @@ function commitQuick(){
   var p=qaParse();if(!p.valid||!$('#qaText').value.trim())return;
   var id=uid(),msg,undo,d=parse(p.date);
   if(p.type==='task'){
-    id=addTask(p.text,p.date,p.cat,p.pri,p.scope,p.end);ui.tcat=p.cat;
+    id=addTask(p.text,p.date,p.cat,p.pri,p.scope,p.end,p.time);ui.tcat=p.cat;
     msg='Задача добавлена: '+scopeLine(p).toLowerCase();
     undo=function(){S.tasks=S.tasks.filter(function(t){return t.id!==id});tomb(id)};
   }else if(p.type==='out'||p.type==='in'){
@@ -1679,6 +1707,127 @@ function closeOverlay(){
   $('#'+openOv).hidden=true;openOv=null;document.documentElement.style.overflow='';
   if(lastFocus&&lastFocus.focus&&document.contains(lastFocus))try{lastFocus.focus()}catch(e){}
   refresh();
+}
+
+
+/* ---------- напоминания в Telegram ---------- */
+var REM={p:null,msg:'',kind:'',busy:false,err:false};
+var REM_TZ=[['Europe/Kaliningrad','Калининград (−1 к Москве)'],['Europe/Moscow','Москва'],['Europe/Samara','Самара'],['Asia/Yekaterinburg','Екатеринбург'],['Asia/Omsk','Омск'],['Asia/Novosibirsk','Новосибирск'],['Asia/Krasnoyarsk','Красноярск'],['Asia/Irkutsk','Иркутск'],['Asia/Yakutsk','Якутск'],['Asia/Vladivostok','Владивосток'],['Asia/Magadan','Магадан'],['Asia/Kamchatka','Камчатка'],['Europe/Minsk','Минск'],['Asia/Almaty','Алматы'],['Asia/Tashkent','Ташкент']];
+function remClient(){var c=(typeof trkClient==='function')?trkClient():null;return c&&c.rpc?c:null}
+function remBtn(){return remClient()?'<div class="row" style="margin-top:12px"><button type="button" class="btn ghost" data-remopen>🔔 Напоминания в Telegram</button></div>':''}
+function remBrowserTz(){try{return Intl.DateTimeFormat().resolvedOptions().timeZone||''}catch(e){return ''}}
+function remSet(m,k){REM.msg=m||'';REM.kind=k||'';renderRem()}
+function openReminders(){
+  closeOverlay();REM.msg='';REM.kind='';REM.err=false;REM.p=null;renderRem();showOverlay('remOv',null);
+  var c=remClient();if(!c)return;
+  c.rpc('get_reminder_prefs').then(function(r){
+    if(r.error||!r.data){REM.err=true}else REM.p=r.data;
+    if(openOv==='remOv')renderRem();
+  },function(){REM.err=true;if(openOv==='remOv')renderRem()});
+}
+function renderRem(){
+  var b=$('#remBody');if(!b)return;var p=REM.p,h='';
+  if(!remClient()){b.innerHTML='<p class="sub">Войдите в аккаунт, чтобы подключить напоминания.</p>';return}
+  if(REM.err){b.innerHTML='<p class="sub">Напоминания ещё не включены на сервере. Если вы владелец проекта, выполните файл reminders.sql в Supabase (инструкция в README).</p>';return}
+  if(!p){b.innerHTML='<p class="sub">Загрузка…</p>';return}
+  var tzs=REM_TZ.slice(),bt=remBrowserTz();
+  if(!tzs.some(function(x){return x[0]===p.tz}))tzs.push([p.tz,p.tz]);
+  var tzo=tzs.map(function(x){return '<option value="'+esc(x[0])+'"'+(x[0]===p.tz?' selected':'')+'>'+esc(x[1])+'</option>'}).join('');
+  var DAYS=[[0,'В день события'],[1,'За 1 день'],[2,'За 2 дня'],[3,'За 3 дня'],[7,'За неделю']];
+  var LEADS=[[0,'В момент начала'],[5,'За 5 минут'],[10,'За 10 минут'],[15,'За 15 минут'],[30,'За 30 минут'],[60,'За 1 час'],[120,'За 2 часа']];
+  var lo=LEADS.slice();if(!lo.some(function(x){return x[0]===p.tk_lead}))lo.push([p.tk_lead,'За '+p.tk_lead+' мин']);
+  var dc=DAYS.map(function(x){return '<button type="button" class="chip" data-remday="'+x[0]+'" aria-pressed="'+(p.ev_days.indexOf(x[0])>=0)+'">'+x[1]+'</button>'}).join('');
+  var lopt=lo.map(function(x){return '<option value="'+x[0]+'"'+(x[0]===p.tk_lead?' selected':'')+'>'+x[1]+'</option>'}).join('');
+  h='<p class="sub">Бот в Telegram напомнит о делах, событиях и задачах. Время и «за сколько» настраиваются ниже.</p>'
+   +'<label class="remrow"><input type="checkbox" id="remOn"'+(p.enabled?' checked':'')+(p.linked?'':' disabled')+'> <span>Присылать напоминания</span></label>';
+  if(!p.linked){
+    h+='<div class="acstat"><b>Telegram не подключён.</b><p class="sub" style="margin-top:6px">Нажмите кнопку, откройте бота и нажмите «Запустить» (Start). Затем вернитесь сюда.</p></div>'
+     +'<div class="row"><button type="button" class="btn big" data-remlink'+(REM.busy?' disabled':'')+'>Подключить Telegram</button><button type="button" class="btn ghost" data-remreload>Я подключил</button></div>';
+  }else{
+    h+='<div class="remsec"><label class="remrow"><input type="checkbox" id="remDg"'+(p.dg_on?' checked':'')+'> <span>План на сегодня и на завтра</span></label>'
+     +'<p class="sub">Утром — что запланировано на сегодня, вечером — на завтра.</p>'
+     +'<div class="g2"><div><label class="lab" for="remM">Утром</label><input id="remM" type="time" value="'+esc(p.morning)+'"></div><div><label class="lab" for="remE">Вечером</label><input id="remE" type="time" value="'+esc(p.evening)+'"></div></div></div>'
+     +'<div class="remsec"><label class="remrow"><input type="checkbox" id="remEv"'+(p.ev_on?' checked':'')+'> <span>События (экзамены, зачёты…)</span></label>'
+     +'<p class="sub">Можно выбрать несколько вариантов.</p><div class="chips">'+dc+'</div>'
+     +'<div><label class="lab" for="remEt">Присылать в</label><input id="remEt" type="time" value="'+esc(p.ev_time)+'"></div></div>'
+     +'<div class="remsec"><label class="remrow"><input type="checkbox" id="remTk"'+(p.tk_on?' checked':'')+'> <span>Задачи с указанным временем</span></label>'
+     +'<p class="sub">Время у задачи: впишите «в 14:30» при добавлении или нажмите «+ Время» у задачи.</p>'
+     +'<div><label class="lab" for="remLead">Когда напомнить</label><select id="remLead">'+lopt+'</select></div></div>'
+     +'<div><label class="lab" for="remTz">Часовой пояс</label><select id="remTz">'+tzo+'</select></div>'
+     +'<div class="row"><button type="button" class="btn ghost" data-remtest'+(REM.busy?' disabled':'')+'>Отправить тест</button>'+(p.is_tg?'':'<button type="button" class="btn danger" data-remunlink>Отвязать Telegram</button>')+'</div>';
+  }
+  h+='<div class="acmsg '+REM.kind+'" role="status">'+esc(REM.msg)+'</div>';
+  b.innerHTML=h;
+}
+function remSave(){
+  var c=remClient(),p=REM.p;if(!c||!p)return;
+  function ck(id,d){var e=$(id);return e?e.checked:d}
+  function vl(id,d){var e=$(id);return e&&e.value?e.value:d}
+  var was=p.enabled;
+  p.enabled=ck('#remOn',p.enabled);p.dg_on=ck('#remDg',p.dg_on);p.ev_on=ck('#remEv',p.ev_on);p.tk_on=ck('#remTk',p.tk_on);
+  p.morning=vl('#remM',p.morning);p.evening=vl('#remE',p.evening);p.ev_time=vl('#remEt',p.ev_time);p.tz=vl('#remTz',p.tz);
+  var ld=parseInt(vl('#remLead',p.tk_lead),10);p.tk_lead=isFinite(ld)?ld:p.tk_lead;
+  if(p.enabled&&!was){var bt=remBrowserTz();if(bt&&REM_TZ.some(function(x){return x[0]===bt}))p.tz=bt}
+  c.rpc('set_reminder_prefs',{p:{enabled:p.enabled,dg_on:p.dg_on,ev_on:p.ev_on,tk_on:p.tk_on,morning:p.morning,evening:p.evening,ev_days:p.ev_days,ev_time:p.ev_time,tk_lead:p.tk_lead,tz:p.tz}}).then(function(r){
+    if(r.error){remSet('Не удалось сохранить.','bad');return}
+    remSet(p.enabled?'Сохранено.':'Напоминания выключены.','ok');
+  },function(){remSet('Нет связи.','bad')});
+}
+function remLink(){
+  var c=remClient();if(!c)return;REM.busy=true;renderRem();
+  c.rpc('reminder_link_code').then(function(r){
+    REM.busy=false;
+    if(r.error||!r.data){remSet('Не удалось получить ссылку.','bad');return}
+    var u='https://t.me/'+((window.WEMED_CONFIG||{}).TG_BOT||'wemedd_bot')+'?start=L'+r.data;
+    var W=window.Telegram&&Telegram.WebApp;
+    try{if(W&&W.initData&&W.openTelegramLink)W.openTelegramLink(u);else window.open(u,'_blank','noopener')}catch(e){location.href=u}
+    remSet('Ссылка действует 15 минут. После «Запустить» в боте нажмите «Я подключил».','');
+  },function(){REM.busy=false;remSet('Нет связи.','bad')});
+}
+function remReload(){
+  var c=remClient();if(!c)return;
+  c.rpc('get_reminder_prefs').then(function(r){
+    if(r.error||!r.data){remSet('Не удалось обновить.','bad');return}
+    REM.p=r.data;remSet(r.data.linked?'Telegram подключён.':'Пока не подключено. Нажмите «Запустить» в боте.',r.data.linked?'ok':'');
+  },function(){remSet('Нет связи.','bad')});
+}
+function remTest(){
+  var c=remClient(),CF=window.WEMED_CONFIG||{};if(!c)return;REM.busy=true;renderRem();
+  c.auth.getSession().then(function(s){
+    var tok=s&&s.data&&s.data.session&&s.data.session.access_token;
+    if(!tok){REM.busy=false;remSet('Войдите заново.','bad');return}
+    return fetch(CF.SUPABASE_URL.replace(/\/+$/,'')+'/functions/v1/send-reminders',{method:'POST',headers:{'Content-Type':'application/json','apikey':CF.SUPABASE_ANON_KEY,'Authorization':'Bearer '+tok},body:JSON.stringify({test:true})})
+      .then(function(r){return r.json().catch(function(){return {}}).then(function(j){REM.busy=false;
+        if(j&&j.ok)remSet('Тест отправлен. Загляните в Telegram.','ok');
+        else if(j&&j.error==='no_chat')remSet('Telegram не подключён.','bad');
+        else remSet('Не получилось отправить. Проверьте, что функция send-reminders развёрнута.','bad')})});
+  }).catch(function(){REM.busy=false;remSet('Нет связи.','bad')});
+}
+function remUnlink(){
+  var c=remClient();if(!c)return;
+  c.rpc('reminder_unlink').then(function(r){if(r.error){remSet('Не удалось отвязать.','bad');return}REM.p.linked=false;REM.p.enabled=false;remSet('Telegram отвязан.','ok')},function(){remSet('Нет связи.','bad')});
+}
+document.addEventListener('click',function(e){
+  var t=e.target;if(!t||!t.closest)return;
+  if(t.closest('[data-remopen]')){openReminders();return}
+  if(t.closest('[data-remlink]')){remLink();return}
+  if(t.closest('[data-remreload]')){remReload();return}
+  if(t.closest('[data-remtest]')){remTest();return}
+  if(t.closest('[data-remunlink]')){remUnlink();return}
+  var dy=t.closest('[data-remday]');if(dy&&REM.p){var n=+dy.dataset.remday,i=REM.p.ev_days.indexOf(n);if(i>=0)REM.p.ev_days.splice(i,1);else REM.p.ev_days.push(n);REM.p.ev_days.sort(function(a,b){return a-b});remSave();return}
+});
+document.addEventListener('change',function(e){var t=e.target;if(t&&t.closest&&t.closest('#remBody'))remSave()});
+
+/* ---------- время у задачи ---------- */
+var TM={id:null};
+function openTaskTime(id){
+  var t=S.tasks.filter(function(x){return x.id===id})[0];if(!t)return;
+  TM.id=id;$('#tmText').textContent=t.text;$('#tmIn').value=t.time||'';showOverlay('tmOv','#tmIn');
+}
+function saveTaskTime(v){
+  var t=S.tasks.filter(function(x){return x.id===TM.id})[0];
+  if(t){t.time=TIME_RE.test(v||'')?v:'';save()}
+  closeOverlay();
 }
 
 /* ---------- оценки ---------- */
@@ -2092,7 +2241,7 @@ function renderAccount(){
     h='<form class="acform" id="acForm" autocomplete="off"><p class="sub">Придумайте новый пароль.</p><div><label class="lab" for="acPass">Новый пароль</label><input id="acPass" type="password" autocomplete="new-password" minlength="6" placeholder="Не короче 6 символов"></div><div class="acmsg '+a.kind+'" role="status">'+esc(a.msg)+'</div><button type="submit" class="btn big block"'+(a.busy?' disabled':'')+'>Сохранить пароль</button></form>';
   }else if(user){
     var st={sync:'Синхронизация…',ok:'Всё сохранено в облаке'+(lastSync?' в '+pad(lastSync.getHours())+':'+pad(lastSync.getMinutes()):''),err:'Нет связи с облаком. Изменения сохранены на устройстве и отправятся позже.',out:''}[syncState]||'';
-    h='<div class="acstat"><span class="eyebrow">Вы вошли как</span><div style="font-weight:600;margin:4px 0 8px;overflow-wrap:anywhere">'+esc(acName())+'</div><span class="'+(syncState==='err'?'neg':syncState==='ok'?'pos':'')+'">'+esc(st)+'</span></div><div class="row" style="margin-top:12px"><button type="button" class="btn ghost" data-acsync>Синхронизировать сейчас</button><button type="button" class="btn danger" data-acout>Выйти</button></div><p class="sub" style="margin-top:12px">Данные хранятся в вашем аккаунте и подтягиваются на любом устройстве после входа. При выходе копия на этом устройстве очищается.</p><div class="acmsg '+a.kind+'" role="status">'+esc(a.msg)+'</div>';
+    h='<div class="acstat"><span class="eyebrow">Вы вошли как</span><div style="font-weight:600;margin:4px 0 8px;overflow-wrap:anywhere">'+esc(acName())+'</div><span class="'+(syncState==='err'?'neg':syncState==='ok'?'pos':'')+'">'+esc(st)+'</span></div><div class="row" style="margin-top:12px"><button type="button" class="btn ghost" data-acsync>Синхронизировать сейчас</button><button type="button" class="btn danger" data-acout>Выйти</button></div>'+remBtn()+'<p class="sub" style="margin-top:12px">Данные хранятся в вашем аккаунте и подтягиваются на любом устройстве после входа. При выходе копия на этом устройстве очищается.</p><div class="acmsg '+a.kind+'" role="status">'+esc(a.msg)+'</div>';
   }else{
     var up=a.mode==='up',rs=a.mode==='reset';
     h='<div class="seg full" role="group" aria-label="Режим"><button type="button" data-acmode="in" aria-pressed="'+(a.mode==='in')+'">Вход</button><button type="button" data-acmode="up" aria-pressed="'+up+'">Регистрация</button></div>'
@@ -2285,6 +2434,9 @@ document.addEventListener('click',function(e){
   var t=e.target&&e.target.closest?e.target:(e.target&&e.target.parentElement);if(!t)return;
   var el;
   if((el=t.closest('[data-chk]'))){toggleTask(el.dataset.chk);return}
+  if((el=t.closest('[data-ttime]'))){openTaskTime(el.dataset.ttime);return}
+  if(t.closest('#tmSave')){saveTaskTime($('#tmIn').value);return}
+  if(t.closest('#tmClear')){saveTaskTime('');return}
   if((el=t.closest('[data-del]'))){deleteTask(el.dataset.del);return}
   if((el=t.closest('[data-tmr]'))){moveTask(el.dataset.tmr,ymd(addDays(today(),1)),'на завтра');return}
   if((el=t.closest('[data-tdy]'))){moveTask(el.dataset.tdy,ymd(today()),'на сегодня');return}
