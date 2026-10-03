@@ -397,6 +397,8 @@ details.data textarea{margin-top:10px;font:12px/1.4 ui-monospace,Menlo,Consolas,
 .sdot[data-s="sync"]{display:block;background:var(--warn)}
 .sdot[data-s="err"]{display:block;background:var(--bad)}
 .acform{display:flex;flex-direction:column;gap:12px}
+.acor{display:flex;align-items:center;gap:10px;margin:14px 0 8px;color:var(--muted);font-size:13px}.acor::before,.acor::after{content:'';flex:1;height:1px;background:var(--line,rgba(128,128,128,.25))}
+.tgbox{display:flex;justify-content:center;align-items:center;min-height:48px}
 .acmsg{font-size:14px;min-height:20px}.acmsg.bad{color:var(--bad)}.acmsg.ok{color:var(--good)}
 .acstat{background:var(--bg);border-radius:20px;padding:14px;font-size:14px}
 
@@ -2044,7 +2046,7 @@ function renderAccount(){
     h='<form class="acform" id="acForm" autocomplete="off"><p class="sub">Придумайте новый пароль.</p><div><label class="lab" for="acPass">Новый пароль</label><input id="acPass" type="password" autocomplete="new-password" minlength="6" placeholder="Не короче 6 символов"></div><div class="acmsg '+a.kind+'" role="status">'+esc(a.msg)+'</div><button type="submit" class="btn big block"'+(a.busy?' disabled':'')+'>Сохранить пароль</button></form>';
   }else if(user){
     var st={sync:'Синхронизация…',ok:'Всё сохранено в облаке'+(lastSync?' в '+pad(lastSync.getHours())+':'+pad(lastSync.getMinutes()):''),err:'Нет связи с облаком. Изменения сохранены на устройстве и отправятся позже.',out:''}[syncState]||'';
-    h='<div class="acstat"><span class="eyebrow">Вы вошли как</span><div style="font-weight:600;margin:4px 0 8px;overflow-wrap:anywhere">'+esc(user.email||'')+'</div><span class="'+(syncState==='err'?'neg':syncState==='ok'?'pos':'')+'">'+esc(st)+'</span></div><div class="row" style="margin-top:12px"><button type="button" class="btn ghost" data-acsync>Синхронизировать сейчас</button><button type="button" class="btn danger" data-acout>Выйти</button></div><p class="sub" style="margin-top:12px">Данные хранятся в вашем аккаунте и подтягиваются на любом устройстве после входа. При выходе копия на этом устройстве очищается.</p><div class="acmsg '+a.kind+'" role="status">'+esc(a.msg)+'</div>';
+    h='<div class="acstat"><span class="eyebrow">Вы вошли как</span><div style="font-weight:600;margin:4px 0 8px;overflow-wrap:anywhere">'+esc(acName())+'</div><span class="'+(syncState==='err'?'neg':syncState==='ok'?'pos':'')+'">'+esc(st)+'</span></div><div class="row" style="margin-top:12px"><button type="button" class="btn ghost" data-acsync>Синхронизировать сейчас</button><button type="button" class="btn danger" data-acout>Выйти</button></div><p class="sub" style="margin-top:12px">Данные хранятся в вашем аккаунте и подтягиваются на любом устройстве после входа. При выходе копия на этом устройстве очищается.</p><div class="acmsg '+a.kind+'" role="status">'+esc(a.msg)+'</div>';
   }else{
     var up=a.mode==='up',rs=a.mode==='reset';
     h='<div class="seg full" role="group" aria-label="Режим"><button type="button" data-acmode="in" aria-pressed="'+(a.mode==='in')+'">Вход</button><button type="button" data-acmode="up" aria-pressed="'+up+'">Регистрация</button></div>'
@@ -2052,9 +2054,52 @@ function renderAccount(){
      +(rs?'':'<div><label class="lab" for="acPass">Пароль</label><input id="acPass" type="password" autocomplete="'+(up?'new-password':'current-password')+'" placeholder="'+(up?'Не короче 6 символов':'Ваш пароль')+'"></div>')
      +'<div class="acmsg '+a.kind+'" role="status">'+esc(a.msg)+'</div><button type="submit" class="btn big block"'+(a.busy?' disabled':'')+'>'+(rs?'Отправить ссылку для сброса':up?'Создать аккаунт':'Войти')+'</button>'
      +(a.mode==='in'?'<button type="button" class="linkbtn" data-acmode="reset">Забыли пароль?</button>':rs?'<button type="button" class="linkbtn" data-acmode="in">Назад ко входу</button>':'')+'</form>'
+     +(CFG.TG_BOT&&a.mode!=='reset'?'<div class="acor"><span>или</span></div><div class="tgbox" id="tgBox"></div>':'')
      +'<p class="sub" style="margin-top:12px">Записи с этого устройства перенесутся в аккаунт, и всё будет синхронизироваться между устройствами.</p>';
   }
   b.innerHTML=h;
+  tgMount();
+}
+function acName(){
+  var m=user&&user.user_metadata;
+  if(m&&m.tg_name)return 'Telegram: '+m.tg_name;
+  return user&&user.email||'';
+}
+function tgMount(){
+  var box=$('#tgBox');if(!box||!CFG.TG_BOT)return;
+  var s=document.createElement('script');
+  s.async=true;s.src='https://telegram.org/js/telegram-widget.js?22';
+  s.setAttribute('data-telegram-login',CFG.TG_BOT);
+  s.setAttribute('data-size','large');
+  s.setAttribute('data-radius','14');
+  s.setAttribute('data-userpic','false');
+  s.setAttribute('data-auth-url',location.origin+location.pathname);
+  box.appendChild(s);
+}
+function tgErr(e){
+  var m=String(e&&e.message||e||'');
+  if(/expired/i.test(m))return 'Вход устарел. Нажмите кнопку Telegram ещё раз.';
+  if(/fetch|network|Failed/i.test(m))return 'Нет связи с сервером. Проверьте интернет.';
+  return 'Не получилось войти через Telegram. '+m;
+}
+function tgLogin(d){
+  toast('Входим через Telegram…');
+  fetch(CFG.SUPABASE_URL.replace(/\/+$/,'')+'/functions/v1/telegram-auth',{method:'POST',headers:{'Content-Type':'application/json','apikey':CFG.SUPABASE_ANON_KEY},body:JSON.stringify(d)})
+    .then(function(r){return r.json().catch(function(){return {}}).then(function(j){return {ok:r.ok,j:j}})})
+    .then(function(x){
+      if(!x.ok||!x.j.token_hash)throw new Error(x.j&&x.j.error||'ошибка сервера');
+      return SB.auth.verifyOtp({token_hash:x.j.token_hash,type:'magiclink'});
+    })
+    .then(function(r){if(r.error)throw r.error;closeOverlay();toast('Вы вошли через Telegram')})
+    .catch(function(e){ui.ac.mode='in';openAccount();acMsg(tgErr(e),'bad')});
+}
+function tgReturn(){
+  if(!SB||!CFG.TG_BOT)return;
+  var q;try{q=new URLSearchParams(location.search)}catch(e){return}
+  if(!q.get('hash')||!q.get('id')||!q.get('auth_date'))return;
+  var d={};q.forEach(function(v,k){d[k]=v});
+  try{history.replaceState(null,'',location.pathname+location.hash)}catch(e){}
+  tgLogin(d);
 }
 function authSubmit(){
   var a=ui.ac,em=($('#acEmail')||{}).value,pw=($('#acPass')||{}).value;
@@ -2366,6 +2411,7 @@ if(SB){
   window.addEventListener('online',function(){syncNow()});
   document.addEventListener('visibilitychange',function(){if(!document.hidden)syncNow()});
   setInterval(function(){if(!document.hidden)syncNow()},60000);
+  tgReturn();
 }
 if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})})}
 
