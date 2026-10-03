@@ -966,7 +966,7 @@ function seedData(){
 
 var CFG=window.WEMED_CONFIG||{},SB=null,user=null,syncState='out',lastSync=null,pushT,busy=false,again=false,localV=0,sync={uid:null,rev:null,dirty:false,force:false};
 var SYNC_DELAY=2000;
-try{var _sr=JSON.parse(localStorage.getItem('wemed.sync')||'{}');sync.uid=_sr.uid||null;sync.rev=(_sr.rev==null?null:_sr.rev);sync.dirty=!!_sr.dirty;sync.force=!!_sr.force}catch(e){}
+try{var _sr=JSON.parse(localStorage.getItem('wemed.sync')||'{}');sync.uid=_sr.uid||null;sync.rev=(_sr.rev==null?null:_sr.rev);sync.dirty=!!_sr.dirty;sync.force=!!_sr.force;sync.be=_sr.be||null}catch(e){}
 
 function saveSync(){try{localStorage.setItem('wemed.sync',JSON.stringify(sync))}catch(e){}}
 var S=load();
@@ -2114,7 +2114,7 @@ function authSubmit(){
   a.busy=true;acMsg('');
   var p;
   if(a.mode==='in')p=SB.auth.signInWithPassword({email:a.email,password:pw});
-  else if(a.mode==='up')p=SB.auth.signUp({email:a.email,password:pw});
+  else if(a.mode==='up')p=SB.auth.signUp({email:a.email,password:pw,options:{emailRedirectTo:location.origin+location.pathname}});
   else p=SB.auth.resetPasswordForEmail(a.email,{redirectTo:location.origin+location.pathname});
   p.then(function(r){
     a.busy=false;
@@ -2400,10 +2400,12 @@ var deferredInstall=null;
 window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();deferredInstall=e;$('#installBtn').hidden=false});
 $('#installBtn').addEventListener('click',function(){if(deferredInstall){deferredInstall.prompt();deferredInstall=null;$('#installBtn').hidden=true}});
 window.addEventListener('appinstalled',function(){$('#installBtn').hidden=true});
+var _hs=location.hash||'';
 try{if(CFG.SUPABASE_URL&&CFG.SUPABASE_ANON_KEY&&window.supabase)SB=window.supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}})}catch(e){SB=null}
 if(SB){
   SB.auth.onAuthStateChange(function(ev,session){
     user=session?session.user:null;
+    if(user&&ui.welcomeToast){ui.welcomeToast=false;setTimeout(function(){toast('Почта подтверждена. Добро пожаловать в WeMed!')},400)}
     if(ev==='PASSWORD_RECOVERY'){ui.ac.mode='recover';ui.ac.msg='';setTimeout(openAccount,0)}
     if(user)setTimeout(function(){syncNow()},0);
     setSync(user?'sync':'out');refresh();
@@ -2412,6 +2414,8 @@ if(SB){
   document.addEventListener('visibilitychange',function(){if(!document.hidden)syncNow()});
   setInterval(function(){if(!document.hidden)syncNow()},60000);
   tgReturn();
+  if(/type=(signup|email_change)/.test(_hs))ui.welcomeToast=true;
+  if(/error_code=|error=access_denied/.test(_hs))setTimeout(function(){ui.ac.mode='in';openAccount();acMsg('Ссылка из письма устарела или уже использована. Войдите с паролем или запросите письмо ещё раз.','bad')},400);
 }
 if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})})}
 
