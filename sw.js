@@ -1,5 +1,5 @@
 // Сервис-воркер WeMed: сначала сеть (чтобы обновления доходили сразу), без сети берётся копия из кэша.
-var CACHE = 'wemed-v13';
+var CACHE = 'wemed-v14';
 var SHELL = ['./', 'index.html', 'config.js', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png'];
 self.addEventListener('install', function (e) {
   e.waitUntil(caches.open(CACHE).then(function (c) { return c.addAll(SHELL); }).then(function () { return self.skipWaiting(); }));
@@ -24,4 +24,30 @@ self.addEventListener('fetch', function (e) {
       return caches.match(req).then(function (hit) { return hit || (req.mode === 'navigate' ? caches.match('index.html') : Response.error()); });
     })
   );
+});
+
+// Пуш-уведомления (приходят с сервера напоминаний)
+self.addEventListener('push', function (e) {
+  var d = {};
+  try { d = e.data ? e.data.json() : {}; } catch (x) { try { d = { body: e.data.text() }; } catch (y) { d = {}; } }
+  var title = d.title || 'WeMed';
+  e.waitUntil(self.registration.showNotification(title, {
+    body: d.body || '',
+    icon: 'icon-192.png',
+    badge: 'icon-192.png',
+    tag: d.tag || 'wemed',
+    renotify: false,
+    data: { url: d.url || './' }
+  }));
+});
+self.addEventListener('notificationclick', function (e) {
+  e.notification.close();
+  var target = new URL((e.notification.data && e.notification.data.url) || './', self.registration.scope).href;
+  e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (list) {
+    for (var i = 0; i < list.length; i++) {
+      var c = list[i];
+      if (c.url.indexOf(self.registration.scope) === 0 && 'focus' in c) return c.focus();
+    }
+    return self.clients.openWindow ? self.clients.openWindow(target) : null;
+  }));
 });
