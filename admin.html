@@ -54,6 +54,8 @@ svg{display:block;width:100%;height:auto}
 .login label{display:block;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);margin:14px 0 6px}
 .login input{width:100%;font:inherit;font-size:16px;border:2px solid var(--line);background:var(--bg);color:var(--ink);border-radius:14px;padding:12px 14px}
 .login input:focus{outline:none;border-color:var(--g)}
+.sinp{flex:1;min-width:200px;font:inherit;font-size:15px;border:2px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:10px 16px}.sinp:focus{outline:none;border-color:var(--g)}
+.ur{display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-top:1px solid var(--line)}.ur:first-child{border-top:0}.ur .a{min-width:0}.ur .nm{font-weight:800;font-size:15px;overflow-wrap:anywhere}.ur .m{font-size:13px;color:var(--mut);font-weight:600;margin-top:2px}.ur .b{text-align:right;flex:none;font-size:13px;color:var(--mut);font-weight:600}
 .note{margin-top:16px;font-size:13px;color:var(--mut);line-height:1.5;font-weight:500}
 a{color:var(--g);font-weight:700}
 [hidden]{display:none!important}
@@ -101,6 +103,10 @@ a{color:var(--g);font-weight:700}
       <div class="card"><h2>Почтовые сервисы</h2><div class="hint">у кого какая почта (без Telegram)</div><div id="dom"></div></div>
       <div class="card"><h2>Последние регистрации</h2><div class="hint">без адресов, только время и способ</div><div id="rec"></div></div>
     </div>
+
+    <div class="card" style="margin-top:12px"><h2>Пользователи</h2><div class="hint">ник в Telegram или почта, кто и когда заходил. Нужны, чтобы потом сопоставлять с подписками.</div>
+      <div class="row" style="margin:10px 0;flex-wrap:wrap"><input id="uq" class="sinp" type="search" placeholder="Поиск: ник, почта или Telegram id" autocomplete="off"><button class="btn" id="csv">Скачать CSV</button></div>
+      <div id="ulist"></div><div class="sub" id="ucnt" style="margin-top:8px"></div></div>
 
     <div class="card" style="margin-top:12px" id="gcCard" hidden><h2>Посещения сайта</h2><div class="hint">включая тех, кто не регистрировался</div><a id="gcLink" target="_blank" rel="noopener">Открыть счётчик GoatCounter →</a></div>
     <p class="note" id="foot"></p>
@@ -162,18 +168,46 @@ function render(d){
   $('#foot').textContent='Активность считается с момента подключения статистики: '+num(d.tracked)+' из '+num(d.total)+' пользователей уже открывали обновлённое приложение. Остальные появятся здесь после своего следующего визита. Содержимое записей пользователей в статистику не попадает.';
   if(CFG.GC){$('#gcCard').hidden=false;$('#gcLink').href='https://'+CFG.GC+'.goatcounter.com'}
 }
+
+var UQ=null,UT=null;
+function uname(u){return u.tg_name||u.email||'—'}
+function dstr(iso){return iso?new Date(iso).toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'2-digit'}):'—'}
+function loadUsers(){
+  var q=($('#uq').value||'').trim();
+  return SB.rpc('admin_users',{p_q:q,p_limit:300}).then(function(r){
+    if(r.error)throw r.error;
+    var a=r.data||[];
+    $('#ulist').innerHTML=a.map(function(u){
+      var kind=u.email?'<span class="pill">Почта</span>':'<span class="pill tg">Telegram'+(u.tg_id?' · id '+esc(u.tg_id):'')+'</span>';
+      var pl=(u.plats||[]).map(function(x){return x==='bot'?'бот':'сайт'}).join(', ');
+      return '<div class="ur"><div class="a"><div class="nm">'+esc(uname(u))+'</div><div class="m">'+kind+' · с '+dstr(u.created_at)+'</div></div><div class="b">'+(u.last_seen?'был '+ago(u.last_seen):'не заходил после обновления')+'<br>'+(u.days?u.days+' дн. активности'+(pl?' · '+pl:''):'')+'</div></div>';
+    }).join('')||'<div class="sub">Никого не найдено</div>';
+    $('#ucnt').textContent=a.length>=300?'Показаны первые 300. Уточните поиск или скачайте CSV.':'Найдено: '+a.length;
+  }).catch(function(e){$('#ulist').innerHTML='<div class="sub">Не получилось загрузить список: '+esc(e&&e.message||e)+'</div>'});
+}
+$('#uq').addEventListener('input',function(){clearTimeout(UT);UT=setTimeout(loadUsers,350)});
+function csvq(v){v=v==null?'':String(v);return /[",;\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v}
+$('#csv').addEventListener('click',function(){
+  SB.rpc('admin_users',{p_q:'',p_limit:1000}).then(function(r){
+    if(r.error)throw r.error;
+    var rows=[['Имя или ник','Почта','Telegram id','Регистрация','Последний визит','Дней активности','Платформы','id']];
+    (r.data||[]).forEach(function(u){rows.push([u.tg_name||'',u.email||'',u.tg_id||'',u.created_at||'',u.last_seen||'',u.days||0,(u.plats||[]).join('+'),u.id])});
+    var t='\ufeff'+rows.map(function(x){return x.map(csvq).join(';')}).join('\r\n');
+    var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'text/csv;charset=utf-8'}));a.download='wemed-users.csv';document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},500);
+  }).catch(function(e){alert('Не получилось: '+(e&&e.message||e))});
+});
 function load(){
   $('#dmsg').textContent='Загружаем…';$('#dmsg').className='msg';
   return SB.rpc('admin_stats').then(function(r){
     if(r.error)throw r.error;
-    $('#dmsg').textContent='';show('dash');render(r.data);
+    $('#dmsg').textContent='';show('dash');render(r.data);loadUsers();
   }).catch(function(e){
     var m=String(e&&e.message||e);
     show('dash');
     $('#kpi').innerHTML='';
     $('#dmsg').className='msg bad';
     if(/forbidden/i.test(m))$('#dmsg').textContent='Этот аккаунт не администратор. Добавьте его в таблицу admins (последний блок в stats.sql).';
-    else if(/could not find|does not exist|schema cache/i.test(m))$('#dmsg').textContent='Функции статистики ещё не созданы. Выполните stats.sql в Supabase → SQL Editor.';
+    else if(/could not find|does not exist|schema cache/i.test(m))$('#dmsg').textContent='Функции статистики ещё не созданы или устарели. Выполните stats.sql целиком в Supabase → SQL Editor.';
     else $('#dmsg').textContent='Не получилось загрузить: '+m;
   });
 }
