@@ -685,6 +685,25 @@ small{font-size:12px}
 .lesadd{grid-template-columns:auto minmax(0,1fr)}
 .lesadd #lesGo{width:100%}
 
+/* положение панели разделов: слева (по умолчанию), справа, снизу */
+html[data-navpos="right"] .rail{left:auto;right:6px}
+html[data-navpos="right"] .app{padding-left:12px;padding-right:calc(var(--rail) + 18px)}
+html[data-navpos="right"] .fab{right:calc(var(--rail) + 20px + env(safe-area-inset-right,0px))}
+html[data-navpos="right"] .toast{left:calc(50% - var(--rail)/2)}
+html[data-navpos="bottom"] .rail{left:8px;right:8px;top:auto;bottom:calc(8px + env(safe-area-inset-bottom,0px));width:auto;height:56px;flex-direction:row;padding:0 6px;border-radius:26px}
+html[data-navpos="bottom"] .rail .logo{display:none}
+html[data-navpos="bottom"] .rail .nav{flex-direction:row;padding:0;height:100%;align-items:center}
+html[data-navpos="bottom"] .bi{width:46px;height:42px;border-radius:16px}
+html[data-navpos="bottom"] .app{padding-left:12px;padding-right:12px;padding-bottom:calc(150px + env(safe-area-inset-bottom,0px))}
+html[data-navpos="bottom"] .fab{bottom:calc(76px + env(safe-area-inset-bottom,0px))}
+html[data-navpos="bottom"] .toast{left:50%;bottom:calc(146px + env(safe-area-inset-bottom,0px))}
+@media (min-width:900px){
+  html[data-navpos="right"] .fab{right:calc(var(--rail) + 24px)}
+  html[data-navpos="right"] .app{padding-right:calc(var(--rail) + 40px);padding-left:24px}
+  html[data-navpos="bottom"] .rail{left:50%;right:auto;width:420px;transform:translateX(-50%)}
+  html[data-navpos="bottom"] .fab{right:max(24px,calc(50vw - 560px))}
+}
+
 </style>
 </head>
 <body data-screen="cal">
@@ -1122,7 +1141,7 @@ function homeLists(m,r){
 }
 function profNorm(p){
   p=p&&typeof p==='object'?p:{};var h=homeLists(p.main,p.more);
-  return {name:String(p.name||'').replace(/\s+/g,' ').trim().slice(0,30),hue:(isFinite(+p.hue)&&p.hue!==''&&p.hue!==null&&+p.hue>=0&&+p.hue<=360)?Math.round(+p.hue):-1,lite:!!p.lite,sys:!!p.sys,vib:p.vib!==false,onb:p.onb?1:0,main:h.main,more:h.more,u:+p.u||0};
+  return {name:String(p.name||'').replace(/\s+/g,' ').trim().slice(0,30),hue:(isFinite(+p.hue)&&p.hue!==''&&p.hue!==null&&+p.hue>=0&&+p.hue<=360)?Math.round(+p.hue):-1,nav:(p.nav==='right'||p.nav==='bottom')?p.nav:'left',lite:!!p.lite,sys:!!p.sys,vib:p.vib!==false,onb:p.onb?1:0,main:h.main,more:h.more,u:+p.u||0};
 }
 function blank(){return {v:2,del:{},grades:[],workouts:[],wtypes:[],evtypes:[],habits:[],hmarks:[],tasks:[],notes:{},nu:{},events:[],tx:[],limit:0,focus:[],lessons:[],prof:profNorm({}),timer:null,palette:null,demo:false,demoNotes:[],demoLimit:false}}
 var MAPC={nerv:'study',card:'work',resp:'health',dig:'home',musc:'sport',skel:'study'};
@@ -1299,6 +1318,7 @@ function applyPalette(){
   var r=document.documentElement,p=effPal(),acc=S.prof.hue>=0?accentFromHue(S.prof.hue,p.m==='d'):null,T=palTokens(p,acc);
   for(var k in T)r.style.setProperty(k,T[k]);
   r.setAttribute('data-mode',p.m==='d'?'dark':'light');r.style.colorScheme=p.m==='d'?'dark':'light';
+  r.setAttribute('data-navpos',S.prof.nav);
   if(S.prof.lite)r.setAttribute('data-lite','');else r.removeAttribute('data-lite');
   var m=document.querySelector('meta[name=theme-color]');if(m)m.setAttribute('content',T['--bg']);
   if(openOv==='palOv')renderPalSheet();
@@ -1326,6 +1346,7 @@ function renderPalSheet(){
   var h='<div><label class="lab" for="profName">Как к вам обращаться</label><input id="profName" type="text" maxlength="30" autocomplete="given-name" placeholder="Ваше имя" value="'+esc(S.prof.name)+'"></div>'
    +'<div class="seg full" role="group" aria-label="Палитры">'+[['all','Все '+PALS.length],['d','Тёмные'],['l','Светлые']].map(function(x){return '<button type="button" data-paltab="'+x[0]+'" aria-pressed="'+(tab===x[0])+'">'+x[1]+'</button>'}).join('')+'</div>'
    +'<div class="pal2" role="group" aria-label="Цветовая тема">'+list.map(function(p){return palCard(p,cur)}).join('')+'</div>'
+   +'<div><span class="lab">Где панель разделов</span><div class="seg full" role="group" aria-label="Положение панели">'+[['left','Слева'],['right','Справа'],['bottom','Снизу']].map(function(x){return '<button type="button" data-pnav="'+x[0]+'" aria-pressed="'+(S.prof.nav===x[0])+'">'+x[1]+'</button>'}).join('')+'</div></div>'
    +'<div><span class="lab">Свой акцентный цвет</span><input type="range" class="hue" id="hueIn" min="0" max="360" step="1" value="'+(hue>=0?hue:150)+'" aria-label="Оттенок акцентного цвета"><div class="row" style="margin-top:6px"><span class="sub" style="margin:0">'+(hue>=0?'Свой цвет включён':'Сейчас цвет из палитры')+'</span>'+(hue>=0?'<button type="button" class="linkbtn" id="hueReset">Сбросить</button>':'')+'</div></div>'
    +tog('lite','Лёгкие эффекты','Меньше размытия — для слабых телефонов',S.prof.lite)
    +tog('sys','Тема по системе','Ночью тёмная, днём светлая',S.prof.sys)
@@ -3150,6 +3171,7 @@ document.addEventListener('click',function(e){
   if(t.closest('#lsDel')){delLesson();return}
   if((el=t.closest('[data-paltab]'))){ui.palTab=el.dataset.paltab;renderPalSheet();return}
   if((el=t.closest('[data-ptog]'))){var pk=el.dataset.ptog;setProf(pk,!S.prof[pk]);applyPalette();renderPalSheet();buzz();return}
+  if((el=t.closest('[data-pnav]'))){setProf('nav',el.dataset.pnav);applyPalette();renderPalSheet();return}
   if(t.closest('#vibTest')){var vr=buzz('ok'),vm=$('#vibMsg');if(vm)vm.textContent=vr?'Отправлено. Если не почувствовали: на iPhone нужна iOS 17.4+, на Android включите вибрацию в системе, в Telegram — в настройках устройства.':'Это устройство или браузер не поддерживает вибрацию.';return}
   if(t.closest('#hueReset')){setProf('hue',-1);applyPalette();renderPalSheet();return}
   if((el=t.closest('[data-evstar]'))){var se=S.events.filter(function(x){return x.id===el.dataset.evstar})[0];if(se){se.star=!se.star;se.u=Date.now();save();buzz();refresh();toast(se.star?'Событие закреплено на главной':'Закрепление снято')}return}
