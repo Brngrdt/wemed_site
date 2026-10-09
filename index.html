@@ -703,6 +703,7 @@ html[data-navpos="bottom"] .toast{left:50%;bottom:calc(146px + env(safe-area-ins
   html[data-navpos="bottom"] .rail{left:50%;right:auto;width:420px;transform:translateX(-50%)}
   html[data-navpos="bottom"] .fab{right:max(24px,calc(50vw - 560px))}
 }
+html[data-navpos="bottom"] .cal-card{--row:clamp(40px,6.6dvh,60px)}
 
 </style>
 </head>
@@ -1141,7 +1142,7 @@ function homeLists(m,r){
 }
 function profNorm(p){
   p=p&&typeof p==='object'?p:{};var h=homeLists(p.main,p.more);
-  return {name:String(p.name||'').replace(/\s+/g,' ').trim().slice(0,30),hue:(isFinite(+p.hue)&&p.hue!==''&&p.hue!==null&&+p.hue>=0&&+p.hue<=360)?Math.round(+p.hue):-1,nav:(p.nav==='right'||p.nav==='bottom')?p.nav:'left',lite:!!p.lite,sys:!!p.sys,vib:p.vib!==false,onb:p.onb?1:0,main:h.main,more:h.more,u:+p.u||0};
+  return {name:String(p.name||'').replace(/\s+/g,' ').trim().slice(0,30),hue:(isFinite(+p.hue)&&p.hue!==''&&p.hue!==null&&+p.hue>=0&&+p.hue<=360)?Math.round(+p.hue):-1,nav:(p.nav==='right'||p.nav==='left')?p.nav:'bottom',lite:!!p.lite,sys:!!p.sys,vib:p.vib!==false,onb:p.onb?1:0,main:h.main,more:h.more,u:+p.u||0};
 }
 function blank(){return {v:2,del:{},grades:[],workouts:[],wtypes:[],evtypes:[],habits:[],hmarks:[],tasks:[],notes:{},nu:{},events:[],tx:[],limit:0,focus:[],lessons:[],prof:profNorm({}),timer:null,palette:null,demo:false,demoNotes:[],demoLimit:false}}
 var MAPC={nerv:'study',card:'work',resp:'health',dig:'home',musc:'sport',skel:'study'};
@@ -1346,7 +1347,7 @@ function renderPalSheet(){
   var h='<div><label class="lab" for="profName">Как к вам обращаться</label><input id="profName" type="text" maxlength="30" autocomplete="given-name" placeholder="Ваше имя" value="'+esc(S.prof.name)+'"></div>'
    +'<div class="seg full" role="group" aria-label="Палитры">'+[['all','Все '+PALS.length],['d','Тёмные'],['l','Светлые']].map(function(x){return '<button type="button" data-paltab="'+x[0]+'" aria-pressed="'+(tab===x[0])+'">'+x[1]+'</button>'}).join('')+'</div>'
    +'<div class="pal2" role="group" aria-label="Цветовая тема">'+list.map(function(p){return palCard(p,cur)}).join('')+'</div>'
-   +'<div><span class="lab">Где панель разделов</span><div class="seg full" role="group" aria-label="Положение панели">'+[['left','Слева'],['right','Справа'],['bottom','Снизу']].map(function(x){return '<button type="button" data-pnav="'+x[0]+'" aria-pressed="'+(S.prof.nav===x[0])+'">'+x[1]+'</button>'}).join('')+'</div></div>'
+   +'<div><span class="lab">Где панель разделов</span><div class="seg full" role="group" aria-label="Положение панели">'+[['bottom','Снизу'],['left','Слева'],['right','Справа']].map(function(x){return '<button type="button" data-pnav="'+x[0]+'" aria-pressed="'+(S.prof.nav===x[0])+'">'+x[1]+'</button>'}).join('')+'</div></div>'
    +'<div><span class="lab">Свой акцентный цвет</span><input type="range" class="hue" id="hueIn" min="0" max="360" step="1" value="'+(hue>=0?hue:150)+'" aria-label="Оттенок акцентного цвета"><div class="row" style="margin-top:6px"><span class="sub" style="margin:0">'+(hue>=0?'Свой цвет включён':'Сейчас цвет из палитры')+'</span>'+(hue>=0?'<button type="button" class="linkbtn" id="hueReset">Сбросить</button>':'')+'</div></div>'
    +tog('lite','Лёгкие эффекты','Меньше размытия — для слабых телефонов',S.prof.lite)
    +tog('sys','Тема по системе','Ночью тёмная, днём светлая',S.prof.sys)
