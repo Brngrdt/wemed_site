@@ -1296,6 +1296,7 @@ try{var _sr=JSON.parse(localStorage.getItem('wemed.sync')||'{}');sync.uid=_sr.ui
 /* Лёгкая статистика: только счётчики (платформа и какие разделы открывали), без содержимого записей */
 var TRK={f:{},last:0,busy:false,plat:'site',first:true};
 function trkFeat(n){if(/^(cal|tasks|habits|sport|grades|money|focus)$/.test(n))TRK.f[n]=(TRK.f[n]||0)+1}
+function trkAct(n){if(/^[a-z]{2,10}$/.test(n)){n='a_'+n;TRK.f[n]=(TRK.f[n]||0)+1}}
 function trkTick(){try{trkTick2()}catch(e){TRK.busy=false;TRK.last=Date.now()}}
 function trkTick2(){
   var cl=(typeof trkClient==='function')?trkClient():null;
@@ -1460,10 +1461,10 @@ function taskRow(t,o){
    +'<div class="tx"><span class="tt" data-tedit="'+t.id+'" role="button" tabindex="0">'+esc(t.text)+'</span><span class="meta">'+sc+(info?'<span>'+esc(info)+'</span>':'')+'<span class="cat" style="--c:var('+c.tok+')"><i class="dot"></i>'+esc(c.name)+'</span>'+(t.pri>1?'<span class="pri p'+t.pri+'">'+PRI[t.pri]+'</span>':'')+(over?'<span class="late">'+(t.scope==='day'?'срок был '+esc(shortDate(t.date).toLowerCase()):'срок прошёл '+esc(dm(due)))+'</span>':'')+'</span>'+mv+'</div>'
    +'<button type="button" class="ed" data-tedit="'+t.id+'" aria-label="Изменить задачу">'+IC('edit',19,1.7)+'</button><button type="button" class="del" data-del="'+t.id+'" aria-label="Удалить задачу">&times;</button></li>';
 }
-function addTask(text,date,cat,pri,scope,end,time){var id=uid(),sc=scopeOk(scope);S.tasks.push({id:id,text:text,date:date,scope:sc,end:sc==='range'?end:null,cat:cat,pri:pri,time:(sc==='day'&&TIME_RE.test(time||''))?time:'',done:false,doneAt:null,ts:Date.now(),demo:false});save();return id}
+function addTask(text,date,cat,pri,scope,end,time){var id=uid(),sc=scopeOk(scope);S.tasks.push({id:id,text:text,date:date,scope:sc,end:sc==='range'?end:null,cat:cat,pri:pri,time:(sc==='day'&&TIME_RE.test(time||''))?time:'',done:false,doneAt:null,ts:Date.now(),demo:false});save();trkAct('task');return id}
 function toggleTask(id){
   var t=S.tasks.filter(function(x){return x.id===id})[0];if(!t)return;
-  t.done=!t.done;t.doneAt=t.done?ymd(today()):null;t.u=Date.now();save();
+  t.done=!t.done;t.doneAt=t.done?ymd(today()):null;t.u=Date.now();save();if(t.done)trkAct('done');
   if(t.done){buzz('ok');toast('Готово: '+t.text.slice(0,40)+(t.text.length>40?'…':''));if(S.timer.taskId===t.id){S.timer.taskId='';save()}}
   refresh();
 }
@@ -1724,7 +1725,7 @@ function obNext(){
 
 function flushNote(){
   clearTimeout(noteT);var ta=$('#noteArea');if(!ta||!noteKey||ui.sheet!=='note')return;
-  var v=ta.value;if((S.notes[noteKey]||'')===v)return;if(v.trim())S.notes[noteKey]=v;else delete S.notes[noteKey];S.nu[noteKey]=Date.now();save();
+  var v=ta.value;if((S.notes[noteKey]||'')===v)return;if(v.trim())S.notes[noteKey]=v;else delete S.notes[noteKey];S.nu[noteKey]=Date.now();save();if(v.trim())trkAct('note');
 }
 function keepEv(){var ti=$('#evTitle');if(ti)ui.evTitle=ti.value}
 function selectDay(k){flushNote();ui.sel=k;ui.tsel=k;ui.evOpen=false;renderCalScreen()}
@@ -1743,7 +1744,7 @@ function addEventFromPanel(){
     if(end<from){var x=from;from=end;end=x}
     if(end===from)end=null;
   }
-  S.events.push({id:uid(),date:from,end:end,type:ui.evType,title:title,ts:Date.now(),demo:false});save();
+  S.events.push({id:uid(),date:from,end:end,type:ui.evType,title:title,ts:Date.now(),demo:false});save();trkAct('event');
   ui.evOpen=false;ui.evEnd=null;ui.evFrom=null;ui.evTitle='';
   ui.sel=from;ui.tsel=from;var fd=parse(from);ui.cal={y:fd.getFullYear(),m:fd.getMonth()};
   if(openOv==='dayOv')closeOverlay();else renderCalScreen();
@@ -2160,17 +2161,17 @@ function commitQuick(){
     msg='Задача добавлена: '+scopeLine(p).toLowerCase();
     undo=function(){S.tasks=S.tasks.filter(function(t){return t.id!==id});tomb(id)};
   }else if(p.type==='out'||p.type==='in'){
-    S.tx.push({id:id,date:p.date,type:p.type,cat:p.cat,amount:p.amount,note:p.text,ts:Date.now(),demo:false});
+    S.tx.push({id:id,date:p.date,type:p.type,cat:p.cat,amount:p.amount,note:p.text,ts:Date.now(),demo:false});trkAct('tx');
     msg=(p.type==='out'?'Расход ':'Доход ')+sRub(p.type==='out'?-p.amount:p.amount)+' · '+p.cat;
     undo=function(){S.tx=S.tx.filter(function(t){return t.id!==id});tomb(id)};
     ui.mon={y:d.getFullYear(),m:d.getMonth()};
   }else if(p.type==='note'){
-    var prev=S.notes[p.date];S.notes[p.date]=prev?prev+'\n'+p.text:p.text;S.nu[p.date]=Date.now();
+    var prev=S.notes[p.date];S.notes[p.date]=prev?prev+'\n'+p.text:p.text;S.nu[p.date]=Date.now();trkAct('note');
     msg='Заметка добавлена: '+whenLabel(p.date).toLowerCase();
     undo=function(){if(prev===undefined)delete S.notes[p.date];else S.notes[p.date]=prev};
   }else{
     if(!S.evtypes.some(function(t){return t.id===p.ev}))p.ev=evtDef();
-    S.events.push({id:id,date:p.date,end:p.end,type:p.ev,title:p.text,ts:Date.now(),demo:false});
+    S.events.push({id:id,date:p.date,end:p.end,type:p.ev,title:p.text,ts:Date.now(),demo:false});trkAct('event');
     msg=evtBy(p.ev).name+' отмечен: '+scopeLine(p).toLowerCase();
     undo=function(){S.events=S.events.filter(function(t){return t.id!==id});tomb(id)};
   }
@@ -2604,7 +2605,7 @@ function addLessons(){
   if(!parts.length){toast('Впишите название предмета.');tx.focus();return}
   var day=wd(parse(ui.sch.sel)),time=(parts.length===1&&TIME_RE.test(tm.value||''))?tm.value:'',now=Date.now(),ids=[];
   parts.forEach(function(p,i){var id=uid();ids.push(id);S.lessons.push({id:id,day:day,time:time,subj:cap(p).slice(0,60),ts:now+i,u:now,demo:false})});
-  save();tx.value='';tm.value='';var ltt=$('#lesTimeTxt');if(ltt)ltt.textContent='';buzz('ok');refresh();
+  save();trkAct('lesson');tx.value='';tm.value='';var ltt=$('#lesTimeTxt');if(ltt)ltt.textContent='';buzz('ok');refresh();
   toast('Добавлено пар: '+parts.length,'Отменить',function(){S.lessons=S.lessons.filter(function(l){return ids.indexOf(l.id)<0});ids.forEach(tomb);save();refresh()});
 }
 function openLesson(id){
@@ -2666,7 +2667,7 @@ function addDebt(){
   var due=$('#debtDue').value;due=DATE_RE.test(due||'')?due:'';
   var id=uid(),now=Date.now();
   S.debts.push({id:id,subj:cap(sj),kind:DKIND_IDS.indexOf($('#debtKind').value)>=0?$('#debtKind').value:'zach',due:due,done:false,doneAt:'',ts:now,u:now,demo:false});
-  save();tx.value='';$('#debtDue').value='';var dt=$('#debtDueTxt');if(dt)dt.textContent='';buzz('ok');refresh();
+  save();trkAct('debt');tx.value='';$('#debtDue').value='';var dt=$('#debtDueTxt');if(dt)dt.textContent='';buzz('ok');refresh();
   toast('Долг добавлен','Отменить',function(){S.debts=S.debts.filter(function(d){return d.id!==id});tomb(id);save();refresh()});
 }
 function toggleDebt(id){
@@ -2724,7 +2725,7 @@ function addGrade(){
   if(!DATE_RE.test(d)){msg.textContent='Укажите дату.';return}
   msg.textContent='';
   var ex=S.grades.filter(function(g){return g.subject.toLowerCase()===subj.toLowerCase()})[0];
-  var id=uid();S.grades.push({id:id,subject:ex?ex.subject:subj,val:ui.gr.val,date:d,kind:$('#grKind').value,ts:Date.now(),demo:false});
+  var id=uid();S.grades.push({id:id,subject:ex?ex.subject:subj,val:ui.gr.val,date:d,kind:$('#grKind').value,ts:Date.now(),demo:false});trkAct('grade');
   save();$('#grSubj').value='';renderGrades();
   toast('Оценка '+ui.gr.val+' по предмету «'+subj+'» добавлена','Отменить',function(){S.grades=S.grades.filter(function(g){return g.id!==id});save();refresh()});
 }
@@ -2745,7 +2746,7 @@ function setMode(mode){var T=S.timer,p=PRESETS[T.pre];T.mode=mode;T.total=(mode=
 function taskOf(id){return S.tasks.filter(function(t){return t.id===id})[0]}
 function logSession(min){
   var T=S.timer,t=taskOf(T.taskId);
-  S.focus.push({id:uid(),date:ymd(today()),min:min,taskId:t?t.id:'',taskText:t?t.text:'',cat:t?t.cat:null,ts:Date.now(),demo:false});
+  S.focus.push({id:uid(),date:ymd(today()),min:min,taskId:t?t.id:'',taskText:t?t.text:'',cat:t?t.cat:null,ts:Date.now(),demo:false});trkAct('session');
 }
 function tStart(){var T=S.timer;if(T.running)return;initAudio();T.endAt=Date.now()+T.remaining*1000;T.running=true;save();lock();renderFocus()}
 function tPause(){var T=S.timer;if(!T.running)return;T.remaining=tRem();T.running=false;T.endAt=0;save();unlock();renderFocus()}
@@ -2870,7 +2871,7 @@ function renderSport(){
 function addWorkout(){
   var sp=ui.sp;
   if(!sp.types.length){toast('Выберите, что тренировали.');return}
-  S.workouts.push({id:uid(),date:sp.sel,types:sp.types.slice(),min:sp.min,ts:Date.now(),demo:false});
+  S.workouts.push({id:uid(),date:sp.sel,types:sp.types.slice(),min:sp.min,ts:Date.now(),demo:false});trkAct('workout');
   sp.types=[];save();renderSport();toast('Тренировка отмечена');
 }
 function wtSheet(){
@@ -2993,7 +2994,7 @@ function saveHabit(){
   var f=ui.hb.form,r=hbResolve();
   if(!r.name){toast('Впишите название привычки.');return}
   if(f.id){S.habits.forEach(function(h){if(h.id===f.id){h.name=r.name;h.start=r.start;h.end=r.end}})}
-  else S.habits.push({id:uid(),name:r.name,start:r.start,end:r.end,ts:Date.now(),demo:false});
+  else{S.habits.push({id:uid(),name:r.name,start:r.start,end:r.end,ts:Date.now(),demo:false});trkAct('habit')}
   save();ui.sheet=null;closeOverlay();
   if(ui.screen!=='habits')go('habits');
   var sd=parse(r.start);ui.hb.ws=wkS(r.start);ui.hb.y=sd.getFullYear();ui.hb.m=sd.getMonth();
@@ -3402,7 +3403,7 @@ document.addEventListener('click',function(e){
   if((el=t.closest('[data-nav]'))){go(el.dataset.nav);return}
   if((el=t.closest('[data-day]'))){selectDay(el.dataset.day);var dpn=$('#dayPanel');if(dpn&&dpn.scrollIntoView){try{dpn.scrollIntoView({behavior:(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)?'auto':'smooth',block:'nearest'})}catch(e2){}}return}
   if((el=t.closest('[data-mday]'))){pickMini(el.dataset.mday);return}
-  if((el=t.closest('[data-pal]'))){S.palette=el.dataset.pal;save();applyPalette();if(ui.screen==='tasks'||ui.screen==='focus')refresh();return}
+  if((el=t.closest('[data-pal]'))){S.palette=el.dataset.pal;save();trkAct('theme');applyPalette();if(ui.screen==='tasks'||ui.screen==='focus')refresh();return}
   if((el=t.closest('[data-tv]'))){var tv=el.dataset.tv;if(tv==='focus'){go('focus');return}ui.tview=tv;if(ui.screen!=='tasks')go('tasks');else renderTasks();return}
   if((el=t.closest('[data-grv]'))){ui.gr.val=el.dataset.grv;renderGradeForm();return}
   if((el=t.closest('[data-subj]'))){var sk=el.dataset.subj;ui.gr.open[sk]=!ui.gr.open[sk];renderGrades();return}
@@ -3525,11 +3526,11 @@ function swEnd(cancel){
   var go=!cancel&&SW.on&&SW.mark,id=SW.id,dx=SW.dx;
   var t=S.tasks.filter(function(x){return x.id===id})[0];
   if(go&&t){
-    if(dx>0){swReset(false);toggleTask(id)}
+    if(dx>0){swReset(false);trkAct('swipe');toggleTask(id)}
     else{
       var L=swLaterInfo(t);
       if(L){
-        swReset(false);var was=t.date,wasU=t.u;t.date=L.to;t.u=Date.now();save();refresh();buzz('ok');
+        swReset(false);trkAct('swipe');var was=t.date,wasU=t.u;t.date=L.to;t.u=Date.now();save();refresh();buzz('ok');
         toast(L.msg,'Вернуть',function(){var q=S.tasks.filter(function(x){return x.id===id})[0];if(q){q.date=was;q.u=Date.now();save();refresh()}});
       }else swReset(true);
     }
