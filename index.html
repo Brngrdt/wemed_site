@@ -755,8 +755,20 @@ html[data-navpos="bottom"] .cal-card{--row:clamp(40px,6.6dvh,60px)}
 
 /* ===== WeMed v3: навигация с подписями, «Сегодня» над календарём, легенда, раздел «Ещё», вид для компьютера, анимации ===== */
 
-/* ---------- шапка: на внутренних экранах без латыни и плашки примеров ---------- */
+/* ---------- шапка: две строки + латынь; статус синхронизации — точка на значке профиля ---------- */
 body:not([data-screen=cal]) :is(.dictum,.demo-pill){display:none!important}
+.top{position:relative}
+.greet .dt{flex-wrap:nowrap;min-width:0}
+.greet .dt>span{white-space:nowrap}
+.acw{position:relative;display:inline-flex}
+.syncchip{position:absolute;right:-3px;top:-3px;width:16px;height:16px;min-height:0;padding:0;border-radius:50%;display:grid;place-items:center;background:var(--bg);box-shadow:0 0 0 1px var(--gb);z-index:1}
+.syncchip i{width:9px;height:9px}
+.syncchip[data-s="out"]{display:none}
+#syncTxt{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.syncchip[data-s="err"] i{animation:pulse 1.2s ease-in-out infinite}
+.dt .demo-pill{margin:0;min-height:0;height:24px;padding:0 9px;font-size:12px;flex:none}
+.dictum{margin-top:-4px}
+.top .ecg{position:absolute;left:0;right:100px;bottom:-10px;height:14px;pointer-events:none}
 
 /* ---------- строка «Сегодня»: отсчёт до события + следующая пара ---------- */
 #cdBox{display:flex;gap:8px;min-width:0}
@@ -767,6 +779,54 @@ body:not([data-screen=cal]) :is(.dictum,.demo-pill){display:none!important}
 .nl b{display:block;font:600 13px/1.25 var(--f-display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .nl b em{font-style:normal;color:var(--lt)}
 .nl.now{box-shadow:inset 0 0 0 1.5px var(--accent),0 0 18px -8px var(--accent)}
+
+/* ---------- панель дня: сразу под календарём, пары, быстрое дело, перелистывание ---------- */
+#s-cal .hcol>*{order:2}
+#s-cal .hcol>#cdBox,#s-cal .hcol>.cal-card{order:0}
+#s-cal .hcol>#dayPanel{order:1}
+.dh-r{gap:6px;flex:none}
+.dpanel .day-h .h{white-space:nowrap;font-size:18px}
+.dstep{width:32px!important;height:32px!important;min-width:32px!important;font-size:20px}
+/* на сенсорных экранах дни листаются свайпом, стрелки нужны только мышью */
+@media (pointer:coarse){.dstep{display:none!important}}
+.dpanel .note-btn .nbt{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.dpanel .note-btn.has::after{display:none}
+/* во вкладках «Учёбы» заголовок карточки повторяет вкладку */
+#schCard .sch-top .h,#debtCard .sch-top .h{display:none}
+.dles{display:flex;gap:6px;overflow-x:auto;margin:8px -2px 6px;padding:2px;scrollbar-width:none}
+.dles::-webkit-scrollbar{display:none}
+.dl{flex:none;display:inline-flex;align-items:center;gap:7px;min-height:36px;padding:0 13px;border:0;border-radius:999px;background:var(--well);box-shadow:inset 0 0 0 1px var(--gb);color:var(--fg);font:600 13.5px var(--f-body);cursor:pointer;white-space:nowrap}
+.dl b{font:600 12.5px var(--f-display);color:var(--lt)}
+.dl.now{box-shadow:inset 0 0 0 1.5px var(--accent),0 0 16px -6px var(--accent)}
+.dl.next{box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--accent) 55%,transparent)}
+.dadd{display:flex;gap:8px;margin-top:10px}
+.dadd input{flex:1;min-width:0;min-height:46px}
+.dadd .btn{min-height:46px;width:52px;padding:0;flex:none;display:grid;place-items:center}
+.dpanel.in-r{animation:dayR .28s var(--ease)}
+.dpanel.in-l{animation:dayL .28s var(--ease)}
+@keyframes dayR{from{transform:translateX(28px);opacity:.25}to{transform:none;opacity:1}}
+@keyframes dayL{from{transform:translateX(-28px);opacity:.25}to{transform:none;opacity:1}}
+
+/* ---------- экран задач: одна строка управления ---------- */
+.tbar{display:flex;align-items:center;gap:8px;min-width:0}
+.tbar .seg{flex:1;min-width:0;display:flex}
+.tbar .seg button{flex:1;min-width:0;padding:0 4px}
+.tbar .tvt{flex:1;margin:0 4px}
+.tvw{display:flex;gap:6px;flex:none}
+.tvw .ic{width:44px;height:44px;color:var(--lt)}
+.tvw .ic[hidden]{display:none}
+.tmore{color:var(--muted);width:38px;height:38px;flex:none;border:0;background:none;border-radius:12px;cursor:pointer}
+.task .tx{padding-top:2px}
+/* меню действий с задачей */
+.tact-t{font-weight:700;font-size:15.5px;overflow-wrap:anywhere;margin:-4px 2px 0}
+.tacts{display:flex;flex-direction:column;gap:8px}
+.tact{display:flex;align-items:center;gap:12px;min-height:54px;padding:0 16px;border:0;border-radius:18px;background:var(--well);box-shadow:inset 0 0 0 1px var(--gb);color:var(--fg);font:600 15px var(--f-body);text-align:left;cursor:pointer;transition:transform .15s}
+.tact:active{transform:scale(.98)}
+.tact .ico{color:var(--lt);flex:none}
+.tact.bad,.tact.bad .ico{color:var(--bad)}
+/* «Учёба»: вкладки */
+.gtab button{display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.gtab .cnt{font-style:normal;min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:var(--bad);color:var(--surface);font:800 12px/20px var(--f-body)}
 
 /* ---------- легенда цветов календаря ---------- */
 .cal-leg{display:flex;flex-wrap:wrap;gap:4px 12px;padding:8px 4px 0;font-size:12px;line-height:1.3;color:var(--muted);font-weight:600}
@@ -825,7 +885,8 @@ html[data-navpos="bottom"] .app{padding-bottom:calc(110px + env(safe-area-inset-
   html .toast{left:calc(50% + 115px)!important;bottom:36px!important}
   #s-cal{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(330px,1fr);gap:16px;align-items:start}
   .hcol{display:flex;flex-direction:column;gap:10px;min-width:0}
-  .hcol #dayPanel{order:-1}
+  #s-cal .hcol>*{order:0}
+  #s-cal .hcol>#dayPanel{order:-1}
   #s-cal .cal-card{--row:clamp(62px,9.6vh,100px)}
   #s-cal .cal-card .day .n{font-size:16px}
 }
@@ -884,7 +945,7 @@ html:is([data-fam=reanim],[data-fam=neon],[data-fam=acid],[data-fam=beton],[data
 /* скругления */
 html:is([data-fam=reanim],[data-fam=neon],[data-fam=acid],[data-fam=beton],[data-fam=clean]) :is(.card,.notice,.rail,.cd,.rib){border-radius:var(--Rb)}
 html:is([data-fam=reanim],[data-fam=neon],[data-fam=acid],[data-fam=beton],[data-fam=clean]) .sheet{border-radius:var(--Rb) var(--Rb) 0 0}
-html:is([data-fam=reanim],[data-fam=neon],[data-fam=acid],[data-fam=beton],[data-fam=clean]) :is(.btn,.btn.big,.seg,.ic,.chip,.evchip,.note-btn,.late-link,input,select,textarea,.qa-in,.les,.debt,.er,.tg,.pc2,.stat,.wkd,.tmpick,.procard,.pro-st,.pro-list li,.qa-prev,.toast,.palbtn,.fab,.bi,.mv,.vpn,.more-row,#lesText,#debtText,#debtForm select,#lesGo,#debtGo){border-radius:var(--Rm)}
+html:is([data-fam=reanim],[data-fam=neon],[data-fam=acid],[data-fam=beton],[data-fam=clean]) :is(.btn,.btn.big,.seg,.ic,.chip,.evchip,.note-btn,.late-link,input,select,textarea,.qa-in,.les,.debt,.er,.tg,.pc2,.stat,.wkd,.tmpick,.procard,.pro-st,.pro-list li,.qa-prev,.toast,.palbtn,.fab,.bi,.mv,.vpn,.more-row,.dl,.tact,.gtab button,#lesText,#debtText,#debtForm select,#lesGo,#debtGo){border-radius:var(--Rm)}
 /* длинные подписи периода в шапках карточек не наезжают на стрелки */
 .cal-head .nav .h{min-width:0;overflow:hidden;text-overflow:ellipsis}
 html:is([data-fam=reanim],[data-fam=acid],[data-fam=beton]) #hbLabel{text-transform:none;letter-spacing:0}
@@ -906,7 +967,7 @@ html[data-fam=reanim] :is(.btn:not(.ghost):not(.danger),.fab){box-shadow:0 0 26p
 html[data-fam=reanim] :is(.day.today .n,.chk[aria-checked="true"]){box-shadow:0 0 14px -1px var(--fill-glow)}
 html[data-fam=reanim] .bi[aria-current="page"]{color:var(--fill);background:color-mix(in srgb,var(--fill) 14%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--fill) 60%,transparent),0 0 18px -4px var(--fill-glow)}
 .ecg{display:none}
-html[data-fam=reanim] body[data-screen=cal] .ecg{display:block;height:26px;margin:-6px 0 -8px;pointer-events:none}
+html[data-fam=reanim] body[data-screen=cal] .ecg{display:block}
 .ecg svg{width:100%;height:100%;display:block;overflow:visible}
 .ecg path{fill:none;stroke:var(--fill);stroke-width:2;vector-effect:non-scaling-stroke;stroke-linejoin:round;filter:drop-shadow(0 0 4px var(--fill-glow));stroke-dasharray:1;stroke-dashoffset:0}
 html[data-fam=reanim]:not([data-mo=calm]) .ecg path{stroke-dasharray:1 1;animation:ecg 2.4s linear infinite}
@@ -970,16 +1031,15 @@ html[data-fam=clean] :is(.card,.notice,.rail){border:1px solid color-mix(in srgb
 
 <div class="app" id="app">
   <header class="top">
-    <div class="greet"><div class="hi" id="greet">Привет!</div><div class="dt"><span id="greetDate"></span><button type="button" class="syncchip" id="syncChip" data-s="out" aria-label="Синхронизация и профиль"><i></i><span id="syncTxt">На устройстве</span></button></div></div>
+    <div class="greet"><div class="hi" id="greet">Привет!</div><div class="dt"><span id="greetDate"></span><button type="button" class="demo-pill" id="demoPill" hidden aria-label="Убрать примеры">Примеры &times;</button></div></div>
     <div class="tools">
-      <button type="button" class="palbtn" id="acBtn" aria-label="Профиль, синхронизация и данные"><svg class="ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle class="f" cx="12" cy="8" r="4"/><path d="M4.5 20.5c0-4 3.4-6.5 7.5-6.5s7.5 2.5 7.5 6.5"/></svg></button>
+      <span class="acw"><button type="button" class="palbtn" id="acBtn" aria-label="Профиль, синхронизация и данные"><svg class="ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle class="f" cx="12" cy="8" r="4"/><path d="M4.5 20.5c0-4 3.4-6.5 7.5-6.5s7.5 2.5 7.5 6.5"/></svg></button><button type="button" class="syncchip" id="syncChip" data-s="out" aria-label="Синхронизация и профиль"><i></i><span id="syncTxt">На устройстве</span></button></span>
       <button type="button" class="palbtn" id="palBtn" aria-label="Оформление и настройки"><svg class="ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="f" d="M12 3a9 9 0 100 18c1.2 0 1.8-.8 1.8-1.7 0-1.3-1-1.5-1-2.6 0-1 .8-1.7 1.9-1.7H17a4 4 0 004-4c0-4.4-4-8-9-8z"/><circle cx="7.6" cy="11" r="1" fill="currentColor" stroke="none"/><circle cx="10" cy="7.4" r="1" fill="currentColor" stroke="none"/><circle cx="14.4" cy="7.4" r="1" fill="currentColor" stroke="none"/></svg></button>
     </div>
+    <div class="ecg" aria-hidden="true"><svg viewBox="0 0 300 26" preserveAspectRatio="none"><path pathLength="1" d="M0 15 H118 L126 15 L132 3 L139 24 L146 8 L151 15 H186 L192 12 L198 15 H300"/></svg></div>
   </header>
 
-  <button type="button" class="demo-pill" id="demoPill" hidden aria-label="Убрать примеры">Примеры &times; убрать</button>
   <button type="button" class="dictum" id="dictum" aria-label="Латинское изречение. Нажмите, чтобы показать другое"><span class="lat" id="qLat" lang="la"></span><span class="ru" id="qRu"></span></button>
-  <div class="ecg" aria-hidden="true"><svg viewBox="0 0 300 26" preserveAspectRatio="none"><path pathLength="1" d="M0 15 H118 L126 15 L132 3 L139 24 L146 8 L151 15 H186 L192 12 L198 15 H300"/></svg></div>
 
   <div class="notice bad" id="storeWarn" hidden>Браузер не разрешает сохранять данные: записи останутся, пока страница открыта. Сделайте резервную копию в профиле (значок вверху).</div>
     <div class="notice" id="authBar" hidden><span>Войдите в аккаунт: данные сохранятся в облаке и будут на всех ваших устройствах.</span><span class="row"><button type="button" class="btn sm" data-acopen>Войти</button><button type="button" class="btn ghost sm" id="authLater">Позже</button></span></div>
@@ -1014,17 +1074,20 @@ html[data-fam=clean] :is(.card,.notice,.rail){border:1px solid color-mix(in srgb
   <!-- ЗАДАЧИ -->
   <section class="screen" id="s-tasks" hidden>
     <div class="stack">
-      <div class="seg full" id="tView" role="group" aria-label="Вид"><button type="button" data-tv="list" aria-pressed="true">Список</button><button type="button" data-tv="prog" aria-pressed="false">Прогресс</button><button type="button" data-tv="focus" aria-pressed="false">Фокус</button></div>
+      <div class="tbar">
+        <div class="seg" id="scopeSeg" role="group" aria-label="Срок задач">
+          <button type="button" data-scope="day" aria-pressed="true">День</button>
+          <button type="button" data-scope="week" aria-pressed="false">Неделя</button>
+          <button type="button" data-scope="month" aria-pressed="false">Месяц</button>
+          <button type="button" data-scope="range" aria-pressed="false">Период</button>
+        </div>
+        <h2 class="h sm tvt" id="tvTitle" hidden>Прогресс</h2>
+        <div class="tvw" id="tView" role="group" aria-label="Вид"><button type="button" class="ic" data-tv="list" aria-pressed="true" aria-label="Список задач" title="Список"><svg class="ico" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect class="f" x="4" y="3" width="16" height="18" rx="4.6"/><path d="M8.2 9.2l1.4 1.4 2.6-2.8M14.2 9.8h2.6M8.2 15.2l1.4 1.4 2.6-2.8M14.2 15.8h2.6"/></svg></button><button type="button" class="ic" data-tv="prog" aria-pressed="false" aria-label="Прогресс" title="Прогресс"><svg class="ico" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/></svg></button><button type="button" class="ic" data-tv="focus" aria-pressed="false" aria-label="Фокус-таймер" title="Фокус"><svg class="ico" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle class="f" cx="12" cy="13.5" r="7.5"/><path d="M12 9.8v3.9l2.5 1.6M9.5 2.8h5"/></svg></button></div>
+      </div>
       <div id="tvList" class="screen">
         <div class="card">
-          <div class="seg full" id="scopeSeg" role="group" aria-label="Срок задач">
-            <button type="button" data-scope="day" aria-pressed="true">День</button>
-            <button type="button" data-scope="week" aria-pressed="false">Неделя</button>
-            <button type="button" data-scope="month" aria-pressed="false">Месяц</button>
-            <button type="button" data-scope="range" aria-pressed="false">Период</button>
-          </div>
           <div id="tNav" class="mini">
-            <div class="mc-head"><div class="nav"><button type="button" class="ic" id="tPrev" aria-label="Предыдущий месяц">&#8249;</button><strong id="mcLabel"></strong><button type="button" class="ic" id="tNext" aria-label="Следующий месяц">&#8250;</button></div><button type="button" class="ic" id="tToday" aria-label="Сегодня" title="Сегодня"><svg class="ico" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect class="f" x="3.5" y="5" width="17" height="15.5" rx="4"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></button></div>
+            <div class="mc-head"><div class="nav"><button type="button" class="ic" id="tPrev" aria-label="Назад">&#8249;</button><strong id="mcLabel"></strong><button type="button" class="ic" id="tNext" aria-label="Вперёд">&#8250;</button></div><button type="button" class="ic" id="tExp" aria-label="Показать весь месяц" title="Весь месяц"><svg class="ico" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 10l6 6 6-6"/></svg></button><button type="button" class="ic" id="tToday" aria-label="Сегодня" title="Сегодня"><svg class="ico" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect class="f" x="3.5" y="5" width="17" height="15.5" rx="4"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></button></div>
             <div class="cal" aria-hidden="true"><div class="dow">Пн</div><div class="dow">Вт</div><div class="dow">Ср</div><div class="dow">Чт</div><div class="dow">Пт</div><div class="dow">Сб</div><div class="dow">Вс</div></div>
             <div class="cal" id="mGrid"></div>
             <p class="mc-lab"><span id="tLabel"></span></p>
@@ -1087,6 +1150,7 @@ html[data-fam=clean] :is(.card,.notice,.rail){border:1px solid color-mix(in srgb
     </div>
   </section>
   <section class="screen" id="s-grades" hidden>
+    <div class="seg full gtab" id="grTab" role="tablist" aria-label="Учёба"><button type="button" role="tab" data-gtab="sch" aria-pressed="true">Расписание</button><button type="button" role="tab" data-gtab="debt" aria-pressed="false">Долги<i class="cnt" id="gtDebt" hidden></i></button><button type="button" role="tab" data-gtab="gr" aria-pressed="false">Оценки</button></div>
     <div class="card" id="schCard">
       <div class="sch-top"><div><h2 class="h sm">Расписание</h2><p class="sub" id="schTitle"></p></div><div class="nav2"><button type="button" class="ic" id="schPrev" aria-label="Предыдущая неделя">&#8249;</button><button type="button" class="ic" id="schToday" aria-label="Эта неделя" title="Эта неделя"><svg class="ico" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect class="f" x="3.5" y="5" width="17" height="15.5" rx="4"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></button><button type="button" class="ic" id="schNext" aria-label="Следующая неделя">&#8250;</button></div></div>
       <div class="wkstrip" id="wkStrip"></div>
@@ -1099,8 +1163,7 @@ html[data-fam=clean] :is(.card,.notice,.rail){border:1px solid color-mix(in srgb
       <form class="debtadd" id="debtForm" autocomplete="off"><input id="debtText" type="text" maxlength="60" enterkeyhint="done" aria-label="Что надо сдать или отработать" placeholder="Что надо сдать или отработать"><select id="debtKind" aria-label="Вид долга"></select><label class="tmpick" id="debtDueBox" title="Срок сдачи"><svg class="ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect class="f" x="3.5" y="5" width="17" height="15.5" rx="4"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg><span id="debtDueTxt"></span><input id="debtDue" type="date" aria-label="Срок сдачи"></label><button type="submit" class="btn" id="debtGo"><svg class="ico" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>&nbsp;Добавить долг</button></form>
       <div id="debtDone"></div>
     </div>
-    <h2 class="jr-h">Журнал и оценки</h2>
-    <div class="cols">
+    <div class="cols" id="grJournal">
       <div class="col">
         <div class="card" id="grHero"></div>
         <div class="card gfrm">
@@ -1591,7 +1654,7 @@ function toast(msg,label,fn){
   if(label){var b=document.createElement('button');b.type='button';b.textContent=label;b.addEventListener('click',function(){fn();hideToast()});el.appendChild(b)}
   el.hidden=false;clearTimeout(toastT);toastT=setTimeout(hideToast,label?6000:2800);
 }
-var ICONS={"dash": "<rect class=\"f\" x=\"3.5\" y=\"3.5\" width=\"7.5\" height=\"10\" rx=\"2.4\"/><rect x=\"13\" y=\"3.5\" width=\"7.5\" height=\"6\" rx=\"2.4\"/><rect class=\"f\" x=\"13\" y=\"11.5\" width=\"7.5\" height=\"9\" rx=\"2.4\"/><rect x=\"3.5\" y=\"15.5\" width=\"7.5\" height=\"5\" rx=\"2.4\"/>", "tasks": "<rect class=\"f\" x=\"4\" y=\"3\" width=\"16\" height=\"18\" rx=\"4.6\"/><path d=\"M8.2 9.2l1.4 1.4 2.6-2.8M14.2 9.8h2.6M8.2 15.2l1.4 1.4 2.6-2.8M14.2 15.8h2.6\"/>", "flame": "<path class=\"f\" d=\"M12 2.8c.8 3.2 5.2 5 5.2 10.2a5.2 5.2 0 01-10.4 0c0-2.1 1-3.6 2.2-4.8.3 1.6 1 2.5 2 3 .2-3 .1-5 1-8.4z\"/>", "sport": "<rect class=\"f\" x=\"2.8\" y=\"9\" width=\"3\" height=\"6\" rx=\"1.2\"/><rect class=\"f\" x=\"5.8\" y=\"6.5\" width=\"3.2\" height=\"11\" rx=\"1.5\"/><rect class=\"f\" x=\"15\" y=\"6.5\" width=\"3.2\" height=\"11\" rx=\"1.5\"/><rect class=\"f\" x=\"18.2\" y=\"9\" width=\"3\" height=\"6\" rx=\"1.2\"/><path d=\"M9 12h6\"/>", "cap": "<path class=\"f\" d=\"M2.5 9.2L12 4.6l9.5 4.6-9.5 4.6-9.5-4.6z\"/><path d=\"M6.6 11.7v4.3c0 1.4 2.5 2.9 5.4 2.9s5.4-1.5 5.4-2.9v-4.3M21.5 9.2v5\"/>", "wallet": "<rect class=\"f\" x=\"3\" y=\"5.5\" width=\"18\" height=\"14\" rx=\"4.2\"/><path d=\"M3 10.2h18\"/><circle cx=\"16.6\" cy=\"14.7\" r=\"1.15\" fill=\"currentColor\" stroke=\"none\"/>", "timer": "<circle class=\"f\" cx=\"12\" cy=\"13.5\" r=\"7.5\"/><path d=\"M12 9.8v3.9l2.5 1.6M9.5 2.8h5\"/>", "note": "<path class=\"f\" d=\"M5 4h14v10.6L14.6 20H5z\"/><path d=\"M14.6 20v-4.2a1.2 1.2 0 011.2-1.2H19M8.5 8.5h7M8.5 12h4\"/>", "spark": "<path class=\"f\" d=\"M11 3.2l2 5 5 2-5 2-2 5-2-5-5-2 5-2z\"/><path d=\"M18.5 15.5v4M16.5 17.5h4\"/>", "bell": "<path class=\"f\" d=\"M6 17v-5.5a6 6 0 0112 0V17l1.5 2h-15z\"/><path d=\"M10 21.5h4\"/>", "palette": "<path class=\"f\" d=\"M12 3a9 9 0 100 18c1.2 0 1.8-.8 1.8-1.7 0-1.3-1-1.5-1-2.6 0-1 .8-1.7 1.9-1.7H17a4 4 0 004-4c0-4.4-4-8-9-8z\"/><circle cx=\"7.6\" cy=\"11\" r=\"1\" fill=\"currentColor\" stroke=\"none\"/><circle cx=\"10\" cy=\"7.4\" r=\"1\" fill=\"currentColor\" stroke=\"none\"/><circle cx=\"14.4\" cy=\"7.4\" r=\"1\" fill=\"currentColor\" stroke=\"none\"/>", "plus": "<path d=\"M12 5v14M5 12h14\"/>", "l": "<path d=\"M15 6l-6 6 6 6\"/>", "r": "<path d=\"M9 6l6 6-6 6\"/>", "clock": "<circle class=\"f\" cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M12 7v5l3 2\"/>", "edit": "<path class=\"f\" d=\"M4 20l1-4L16.5 4.5a2.1 2.1 0 013 3L8 19z\"/><path d=\"M14.5 6.5l3 3\"/>", "mic": "<rect class=\"f\" x=\"9\" y=\"3\" width=\"6\" height=\"12\" rx=\"3\"/><path d=\"M5.5 11a6.5 6.5 0 0013 0M12 17.5V21\"/>", "check": "<path d=\"M5 12.5l4.5 4.5L19 7.5\"/>", "arrow": "<path d=\"M5 12h14M13 6l6 6-6 6\"/>", "up": "<path d=\"M6 14l6-6 6 6\"/>", "down": "<path d=\"M6 10l6 6 6-6\"/>", "star": "<path d=\"M12 3.6l2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 17l-5.2 2.8 1-5.9L3.5 9.8l5.9-.8z\"/>", "starf": "<path d=\"M12 3.6l2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 17l-5.2 2.8 1-5.9L3.5 9.8l5.9-.8z\" fill=\"currentColor\" fill-opacity=\".9\"/>", "user": "<circle class=\"f\" cx=\"12\" cy=\"8\" r=\"4\"/><path d=\"M4.5 20.5c0-4 3.4-6.5 7.5-6.5s7.5 2.5 7.5 6.5\"/>", "cal": "<rect class=\"f\" x=\"3.5\" y=\"5\" width=\"17\" height=\"15.5\" rx=\"4\"/><path d=\"M3.5 10h17M8 3v4M16 3v4\"/>", "swap": "<path d=\"M7 4v14M3.5 14.5L7 18l3.5-3.5M17 20V6M13.5 9.5L17 6l3.5 3.5\"/>", "book": "<path class=\"f\" d=\"M5 4.5h10.5A3.5 3.5 0 0119 8v12H8.5A3.5 3.5 0 015 16.5z\"/><path d=\"M5 16.5A3.5 3.5 0 018.5 13H19\"/>", "trash": "<path d=\"M5 7h14M10 7V4.5h4V7M7 7l.8 12.5h8.4L17 7\"/>", "x": "<path d=\"M6 6l12 12M18 6L6 18\"/>", "flag": "<path class=\"f\" d=\"M5 4v17\"/><path d=\"M5 4.5h12l-2 4 2 4H5\"/>", "sliders": "<path d=\"M4 7h9M17 7h3M4 17h3M11 17h9\"/><circle class=\"f\" cx=\"15\" cy=\"7\" r=\"2.3\"/><circle class=\"f\" cx=\"9\" cy=\"17\" r=\"2.3\"/>", "cloud": "<path class=\"f\" d=\"M7 18.5a4.5 4.5 0 01-.6-8.96A6 6 0 0118 10.5a4 4 0 01-.5 8z\"/>", "up2": "<path d=\"M7 17L17 7M9 7h8v8\"/>", "dn": "<path d=\"M5 12.5l4.5 4.5L19 7.5\"/>", "more": "<rect class=\"f\" x=\"3.5\" y=\"3.5\" width=\"7.5\" height=\"7.5\" rx=\"2.4\"/><rect x=\"13\" y=\"3.5\" width=\"7.5\" height=\"7.5\" rx=\"2.4\"/><rect x=\"3.5\" y=\"13\" width=\"7.5\" height=\"7.5\" rx=\"2.4\"/><circle class=\"f\" cx=\"16.75\" cy=\"16.75\" r=\"3.9\"/>"};
+var ICONS={"dash": "<rect class=\"f\" x=\"3.5\" y=\"3.5\" width=\"7.5\" height=\"10\" rx=\"2.4\"/><rect x=\"13\" y=\"3.5\" width=\"7.5\" height=\"6\" rx=\"2.4\"/><rect class=\"f\" x=\"13\" y=\"11.5\" width=\"7.5\" height=\"9\" rx=\"2.4\"/><rect x=\"3.5\" y=\"15.5\" width=\"7.5\" height=\"5\" rx=\"2.4\"/>", "tasks": "<rect class=\"f\" x=\"4\" y=\"3\" width=\"16\" height=\"18\" rx=\"4.6\"/><path d=\"M8.2 9.2l1.4 1.4 2.6-2.8M14.2 9.8h2.6M8.2 15.2l1.4 1.4 2.6-2.8M14.2 15.8h2.6\"/>", "flame": "<path class=\"f\" d=\"M12 2.8c.8 3.2 5.2 5 5.2 10.2a5.2 5.2 0 01-10.4 0c0-2.1 1-3.6 2.2-4.8.3 1.6 1 2.5 2 3 .2-3 .1-5 1-8.4z\"/>", "sport": "<rect class=\"f\" x=\"2.8\" y=\"9\" width=\"3\" height=\"6\" rx=\"1.2\"/><rect class=\"f\" x=\"5.8\" y=\"6.5\" width=\"3.2\" height=\"11\" rx=\"1.5\"/><rect class=\"f\" x=\"15\" y=\"6.5\" width=\"3.2\" height=\"11\" rx=\"1.5\"/><rect class=\"f\" x=\"18.2\" y=\"9\" width=\"3\" height=\"6\" rx=\"1.2\"/><path d=\"M9 12h6\"/>", "cap": "<path class=\"f\" d=\"M2.5 9.2L12 4.6l9.5 4.6-9.5 4.6-9.5-4.6z\"/><path d=\"M6.6 11.7v4.3c0 1.4 2.5 2.9 5.4 2.9s5.4-1.5 5.4-2.9v-4.3M21.5 9.2v5\"/>", "wallet": "<rect class=\"f\" x=\"3\" y=\"5.5\" width=\"18\" height=\"14\" rx=\"4.2\"/><path d=\"M3 10.2h18\"/><circle cx=\"16.6\" cy=\"14.7\" r=\"1.15\" fill=\"currentColor\" stroke=\"none\"/>", "timer": "<circle class=\"f\" cx=\"12\" cy=\"13.5\" r=\"7.5\"/><path d=\"M12 9.8v3.9l2.5 1.6M9.5 2.8h5\"/>", "note": "<path class=\"f\" d=\"M5 4h14v10.6L14.6 20H5z\"/><path d=\"M14.6 20v-4.2a1.2 1.2 0 011.2-1.2H19M8.5 8.5h7M8.5 12h4\"/>", "spark": "<path class=\"f\" d=\"M11 3.2l2 5 5 2-5 2-2 5-2-5-5-2 5-2z\"/><path d=\"M18.5 15.5v4M16.5 17.5h4\"/>", "bell": "<path class=\"f\" d=\"M6 17v-5.5a6 6 0 0112 0V17l1.5 2h-15z\"/><path d=\"M10 21.5h4\"/>", "palette": "<path class=\"f\" d=\"M12 3a9 9 0 100 18c1.2 0 1.8-.8 1.8-1.7 0-1.3-1-1.5-1-2.6 0-1 .8-1.7 1.9-1.7H17a4 4 0 004-4c0-4.4-4-8-9-8z\"/><circle cx=\"7.6\" cy=\"11\" r=\"1\" fill=\"currentColor\" stroke=\"none\"/><circle cx=\"10\" cy=\"7.4\" r=\"1\" fill=\"currentColor\" stroke=\"none\"/><circle cx=\"14.4\" cy=\"7.4\" r=\"1\" fill=\"currentColor\" stroke=\"none\"/>", "plus": "<path d=\"M12 5v14M5 12h14\"/>", "l": "<path d=\"M15 6l-6 6 6 6\"/>", "r": "<path d=\"M9 6l6 6-6 6\"/>", "clock": "<circle class=\"f\" cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M12 7v5l3 2\"/>", "edit": "<path class=\"f\" d=\"M4 20l1-4L16.5 4.5a2.1 2.1 0 013 3L8 19z\"/><path d=\"M14.5 6.5l3 3\"/>", "mic": "<rect class=\"f\" x=\"9\" y=\"3\" width=\"6\" height=\"12\" rx=\"3\"/><path d=\"M5.5 11a6.5 6.5 0 0013 0M12 17.5V21\"/>", "check": "<path d=\"M5 12.5l4.5 4.5L19 7.5\"/>", "arrow": "<path d=\"M5 12h14M13 6l6 6-6 6\"/>", "up": "<path d=\"M6 14l6-6 6 6\"/>", "down": "<path d=\"M6 10l6 6 6-6\"/>", "star": "<path d=\"M12 3.6l2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 17l-5.2 2.8 1-5.9L3.5 9.8l5.9-.8z\"/>", "starf": "<path d=\"M12 3.6l2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 17l-5.2 2.8 1-5.9L3.5 9.8l5.9-.8z\" fill=\"currentColor\" fill-opacity=\".9\"/>", "user": "<circle class=\"f\" cx=\"12\" cy=\"8\" r=\"4\"/><path d=\"M4.5 20.5c0-4 3.4-6.5 7.5-6.5s7.5 2.5 7.5 6.5\"/>", "cal": "<rect class=\"f\" x=\"3.5\" y=\"5\" width=\"17\" height=\"15.5\" rx=\"4\"/><path d=\"M3.5 10h17M8 3v4M16 3v4\"/>", "swap": "<path d=\"M7 4v14M3.5 14.5L7 18l3.5-3.5M17 20V6M13.5 9.5L17 6l3.5 3.5\"/>", "book": "<path class=\"f\" d=\"M5 4.5h10.5A3.5 3.5 0 0119 8v12H8.5A3.5 3.5 0 015 16.5z\"/><path d=\"M5 16.5A3.5 3.5 0 018.5 13H19\"/>", "trash": "<path d=\"M5 7h14M10 7V4.5h4V7M7 7l.8 12.5h8.4L17 7\"/>", "x": "<path d=\"M6 6l12 12M18 6L6 18\"/>", "flag": "<path class=\"f\" d=\"M5 4v17\"/><path d=\"M5 4.5h12l-2 4 2 4H5\"/>", "sliders": "<path d=\"M4 7h9M17 7h3M4 17h3M11 17h9\"/><circle class=\"f\" cx=\"15\" cy=\"7\" r=\"2.3\"/><circle class=\"f\" cx=\"9\" cy=\"17\" r=\"2.3\"/>", "cloud": "<path class=\"f\" d=\"M7 18.5a4.5 4.5 0 01-.6-8.96A6 6 0 0118 10.5a4 4 0 01-.5 8z\"/>", "up2": "<path d=\"M7 17L17 7M9 7h8v8\"/>", "dn": "<path d=\"M5 12.5l4.5 4.5L19 7.5\"/>", "more": "<rect class=\"f\" x=\"3.5\" y=\"3.5\" width=\"7.5\" height=\"7.5\" rx=\"2.4\"/><rect x=\"13\" y=\"3.5\" width=\"7.5\" height=\"7.5\" rx=\"2.4\"/><rect x=\"3.5\" y=\"13\" width=\"7.5\" height=\"7.5\" rx=\"2.4\"/><circle class=\"f\" cx=\"16.75\" cy=\"16.75\" r=\"3.9\"/>", "dots": "<circle cx=\"5.5\" cy=\"12\" r=\"1.6\"/><circle cx=\"12\" cy=\"12\" r=\"1.6\"/><circle cx=\"18.5\" cy=\"12\" r=\"1.6\"/>", "chart": "<path d=\"M4 20V10M10 20V4M16 20v-7M21 20H3\"/>"};
 function IC(k,sz,w){return '<svg class="ico" viewBox="0 0 24 24" width="'+(sz||20)+'" height="'+(sz||20)+'" fill="none" stroke="currentColor" stroke-width="'+(w||1.7)+'" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+ICONS[k]+'</svg>'}
 function setProf(k,v){S.prof[k]=v;S.prof.u=Date.now();save()}
 var hapEl=null;
@@ -1757,15 +1820,26 @@ function taskMeta(t){
 function taskRow(t,o){
   o=o||{};var c=catBy(t.cat),tk=ymd(today()),due=tkDue(t),over=!t.done&&due<tk;
   var sc=t.scope==='day'?'':'<span class="sc">'+SC_NAME[t.scope]+'</span>',info=taskMeta(t),mv='';
-  if(t.time&&(t.done||o.compact))sc+='<span class="sc">'+IC('clock',12,2.2)+' '+t.time+'</span>';
-  if(!t.done&&!o.compact){
-    if(t.scope==='day')mv='<button type="button" class="mv" data-ttime="'+t.id+'">'+(t.time?IC('clock',13,2.2)+' '+t.time:'+ Время')+'</button>'+'<button type="button" class="mv" '+(t.date===tk?'data-tmr':'data-tdy')+'="'+t.id+'">'+(t.date===tk?'Перенести на завтра':'Перенести на сегодня')+'</button>';
-    else if(over&&(t.scope==='week'||t.scope==='month'))mv='<button type="button" class="mv" data-tcur="'+t.id+'">'+(t.scope==='week'?'Перенести на эту неделю':'Перенести на этот месяц')+'</button>';
-  }
+  /* строка без лишних кнопок: время — значком, действия — в меню «⋯» (и свайпы: вправо — готово, влево — позже) */
+  if(t.time)sc+='<span class="sc">'+IC('clock',12,2.2)+' '+t.time+'</span>';
   return '<li class="task'+(t.done?' done':'')+'"><button type="button" class="chk" role="checkbox" aria-checked="'+t.done+'" data-chk="'+t.id+'" aria-label="Выполнено: '+esc(t.text)+'">'+CHECK+'</button>'
-   +'<div class="tx"><span class="tt" data-tedit="'+t.id+'" role="button" tabindex="0">'+esc(t.text)+'</span><span class="meta">'+sc+(info?'<span>'+esc(info)+'</span>':'')+'<span class="cat" style="--c:var('+c.tok+')"><i class="dot"></i>'+esc(c.name)+'</span>'+(t.pri>1?'<span class="pri p'+t.pri+'">'+PRI[t.pri]+'</span>':'')+(over?'<span class="late">'+(t.scope==='day'?'срок был '+esc(shortDate(t.date).toLowerCase()):'срок прошёл '+esc(dm(due)))+'</span>':'')+'</span>'+mv+'</div>'
-   +'<button type="button" class="ed" data-tedit="'+t.id+'" aria-label="Изменить задачу">'+IC('edit',19,1.7)+'</button><button type="button" class="del" data-del="'+t.id+'" aria-label="Удалить задачу">&times;</button></li>';
+   +'<div class="tx"><span class="tt" data-tedit="'+t.id+'" role="button" tabindex="0">'+esc(t.text)+'</span><span class="meta">'+sc+(info?'<span>'+esc(info)+'</span>':'')+'<span class="cat" style="--c:var('+c.tok+')"><i class="dot"></i>'+esc(c.name)+'</span>'+(t.pri>1?'<span class="pri p'+t.pri+'">'+PRI[t.pri]+'</span>':'')+(over?'<span class="late">'+(t.scope==='day'?'срок был '+esc(shortDate(t.date).toLowerCase()):'срок прошёл '+esc(dm(due)))+'</span>':'')+'</span></div>'
+   +'<button type="button" class="ed tmore" data-tmenu="'+t.id+'" aria-label="Действия с задачей">'+IC('dots',20,2.2)+'</button></li>';
 }
+/* меню действий с задачей */
+function renderTaskActs(){
+  var t=S.tasks.filter(function(x){return x.id===ui.tact})[0];
+  if(!t)return '<div class="sh-head"><h2 class="h sm">Задача</h2><button type="button" class="btn ghost sm" data-close>Закрыть</button></div><p class="sub">Задача уже удалена.</p>';
+  var tk=ymd(today()),over=!t.done&&tkDue(t)<tk,b=function(attr,ic,txt,cls){return '<button type="button" class="tact'+(cls?' '+cls:'')+'" '+attr+'="'+t.id+'">'+IC(ic,20,1.8)+'<span>'+txt+'</span></button>'};
+  var h='<div class="sh-head"><h2 class="h sm">Задача</h2><button type="button" class="btn ghost sm" data-close>Закрыть</button></div><p class="tact-t">'+esc(t.text)+'</p><div class="tacts">'
+   +b('data-tedit','edit','Изменить');
+  if(!t.done&&t.scope==='day'){
+    h+=b('data-ttime','clock',t.time?'Время: '+t.time:'Добавить время');
+    h+=b(t.date===tk?'data-tmr':'data-tdy','arrow',t.date===tk?'Перенести на завтра':'Перенести на сегодня');
+  }else if(!t.done&&over&&(t.scope==='week'||t.scope==='month'))h+=b('data-tcur','arrow',t.scope==='week'?'Перенести на эту неделю':'Перенести на этот месяц');
+  return h+b('data-del','trash','Удалить','bad')+'</div><p class="sub">Подсказка: смахните задачу вправо — готово, влево — перенести.</p>';
+}
+function openTaskActs(id){ui.sheet='tact';ui.tact=id;renderDaySheet();showOverlay('dayOv',null)}
 function addTask(text,date,cat,pri,scope,end,time){var id=uid(),sc=scopeOk(scope);S.tasks.push({id:id,text:text,date:date,scope:sc,end:sc==='range'?end:null,cat:cat,pri:pri,time:(sc==='day'&&TIME_RE.test(time||''))?time:'',done:false,doneAt:null,ts:Date.now(),demo:false});save();trkAct('task');return id}
 function toggleTask(id){
   var t=S.tasks.filter(function(x){return x.id===id})[0];if(!t)return;
@@ -1796,6 +1870,8 @@ function calHtml(y,m,o){
   var first=new Date(y,m,1),off=wd(first),dim=new Date(y,m+1,0).getDate(),tk=ymd(today());
   var fk=ymd(first),lk=ymd(new Date(y,m,dim));
   var total=Math.ceil((off+dim)/7)*7,single={},fill={},rib={},laneEnd=[];
+  /* o.week: одна неделя, в которой лежит эта дата (свёрнутый календарь) */
+  if(o.week){first=parse(wkS(o.week));off=0;dim=7;total=7;fk=ymd(first);lk=ymd(addDays(first,6))}
   S.events.forEach(function(e){if(!e.end&&e.date>=fk&&e.date<=lk)(single[e.date]=single[e.date]||[]).push(e.type)});
   S.debts.forEach(function(d){if(!d.done&&d.due&&d.due>=fk&&d.due<=lk)(single[d.due]=single[d.due]||[]).push('debt')});
   S.events.filter(function(e){return e.end&&e.end>=fk&&e.date<=lk}).sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:a.ts-b.ts}).forEach(function(e){
@@ -1809,9 +1885,10 @@ function calHtml(y,m,o){
   });
   var h='';
   for(var i=0;i<total;i++){
-    var dn=i-off+1;
-    if(dn<1||dn>dim){h+='<div class="day blank" aria-hidden="true"></div>';continue}
-    var k=ymd(new Date(y,m,dn)),note=!!S.notes[k],st=dayStats(k),cols=[],sg=single[k]||[],fl=fill[k]||[];
+    var dn=i-off+1,dd0=o.week?addDays(first,i):new Date(y,m,dn),mm=dd0.getMonth();
+    if(!o.week&&(dn<1||dn>dim)){h+='<div class="day blank" aria-hidden="true"></div>';continue}
+    if(o.week)dn=dd0.getDate();
+    var k=ymd(dd0),note=!!S.notes[k],st=dayStats(k),cols=[],sg=single[k]||[],fl=fill[k]||[];
     sg.concat(fl).forEach(function(id){if(cols.indexOf(id)<0)cols.push(id)});
     var names=dayEvents(k).map(function(e){return evtBy(e.type).name+(e.title?' '+e.title:'')}).concat(S.debts.filter(function(d){return !d.done&&d.due===k}).map(function(d){return 'Долг: '+d.subj}));
     var style='';
@@ -1820,7 +1897,7 @@ function calHtml(y,m,o){
       var bg=n3===1?tk3[0]:'linear-gradient(135deg,'+tk3.map(function(c,j){return c+' '+(j*100/n3)+'% '+((j+1)*100/n3)+'%'}).join(',')+')';
       style=' style="--efill:'+bg+';--eop:'+'.62'+'"';
     }
-    var label=dn+' '+MONTHS_GEN[m]+(names.length?', '+names.join(', '):'')+(note?', есть заметка':'')+(st.total?', задач '+st.total:'');
+    var label=dn+' '+MONTHS_GEN[mm]+(names.length?', '+names.join(', '):'')+(note?', есть заметка':'')+(st.total?', задач '+st.total:'');
     var rb='';
     h+='<button type="button" class="day'+(cols.length?' has':'')+(k===tk?' today':'')+(k===o.sel?' sel':'')+(o.wk&&k>=o.wk[0]&&k<=o.wk[1]?' wk':'')+'" '+o.attr+'="'+k+'"'+style+' aria-label="'+esc(label)+'"'+(k===o.sel?' aria-pressed="true"':'')+'><span class="n">'+dn+'</span>'+rb+(note?'<i class="nt"></i>':'')+(o.dots&&o.dots[k]?'<i class="td"></i>':'')+'</button>';
   }
@@ -1838,10 +1915,15 @@ function renderCalGrid(){
   $('#cLeg').innerHTML=L.map(function(t){return '<span><i style="background:'+cvar(t.c)+'"></i>'+esc(t.name)+'</span>'}).join('')+(nt?'<span><i class="nt"></i>заметка</span>':'');
 }
 function renderMini(){
-  var y=ui.cal.y,m=ui.cal.m,sc=ui.scope,dots={};
-  $('#mcLabel').textContent=MONTHS[m]+' '+y;
+  var y=ui.cal.y,m=ui.cal.m,sc=ui.scope,dots={},wkMode=tcalWeek();
+  $('#mcLabel').textContent=wkMode?rangeText(wkS(ui.tsel),wkE(ui.tsel)):MONTHS[m]+' '+y;
+  var ex=$('#tExp');if(ex){ex.hidden=(sc==='month');ex.innerHTML=IC(wkMode?'down':'up',18,2);ex.setAttribute('aria-label',wkMode?'Показать весь месяц':'Свернуть до недели')}
   S.tasks.forEach(function(t){if(t.done)return;if(t.scope==='day')dots[t.date]=1;else if(t.scope==='range'){for(var d=parse(t.date),n=0;ymd(d)<=t.end&&n<400;d=addDays(d,1),n++)dots[ymd(d)]=1}});
-  $('#mGrid').innerHTML=calHtml(y,m,{sel:sc==='month'?null:ui.tsel,attr:'data-mday',dots:dots,wk:sc==='week'?[wkS(ui.tsel),wkE(ui.tsel)]:null});
+  $('#mGrid').innerHTML=calHtml(y,m,{sel:sc==='month'?null:ui.tsel,attr:'data-mday',dots:dots,wk:sc==='week'?[wkS(ui.tsel),wkE(ui.tsel)]:null,week:wkMode?ui.tsel:null});
+}
+/* мини-календарь задач свёрнут до недели (кроме срока «Месяц»); выбор запоминается */
+function tcalWeek(){if(ui.scope==='month')return false;if(ui.tcalOpen==null){try{ui.tcalOpen=localStorage.getItem('wemed.tcal')==='1'}catch(e){ui.tcalOpen=false}}return !ui.tcalOpen}
+function toggleTcal(){ui.tcalOpen=tcalWeek();try{localStorage.setItem('wemed.tcal',ui.tcalOpen?'1':'0')}catch(e){}renderTasks()
 }
 function evForm(){
   if(!S.evtypes.some(function(t){return t.id===ui.evType}))ui.evType=evtDef();
@@ -1870,6 +1952,7 @@ function renderDaySheet(){
   if(ui.sheet==='debt'){$('#dayOvBody').innerHTML=renderDebtSheet();return}
   if(ui.sheet==='pro'){$('#dayOvBody').innerHTML=renderProSheet();return}
   if(ui.sheet==='more'){$('#dayOvBody').innerHTML=renderMoreSheet();return}
+  if(ui.sheet==='tact'){$('#dayOvBody').innerHTML=renderTaskActs();return}
   var d=parse(ui.sel),box=$('#dayOvBody'),h;
   if(ui.sheet==='note'){
     h='<div class="sh-head"><h2 class="h sm">Заметка · '+esc(dayShort(d))+'</h2><button type="button" class="btn ghost sm" data-close>Готово</button></div>'
@@ -1893,15 +1976,23 @@ function renderDay(){
   var tasks=S.tasks.filter(function(t){return t.scope==='day'&&t.date===k}).sort(sortTasks),done=tasks.filter(function(t){return t.done}).length;
   var run=S.tasks.filter(function(t){return t.scope==='range'&&t.date<=k&&k<=t.end}).sort(sortTasks);
   var ev=dayEvents(k),over=(k===tk)?overdueCount():0;
-  var h='<div class="card tight dpanel"><div class="day-h"><div><span class="eyebrow" lang="la">'+WD_LAT[wd(d)]+'</span><h2 class="h">'+esc(dayShort(d))+'</h2></div><div class="dh-r">'+(tasks.length?'<span class="count num">'+done+'/'+tasks.length+'</span>':'')+'<button type="button" class="btn ghost sm" data-evopen>+ Отметка</button></div></div><div class="dp-scroll">';
+  var rd=relDay(k);
+  var h='<div class="card tight dpanel"><div class="day-h"><div><span class="eyebrow"'+(rd?'':' lang="la"')+'>'+(rd||WD_LAT[wd(d)])+'</span><h2 class="h">'+esc(dayShort(d))+'</h2></div><div class="dh-r">'+(tasks.length?'<span class="count num">'+done+'/'+tasks.length+'</span>':'')+'<button type="button" class="ic dstep" data-dstep="-1" aria-label="Предыдущий день">&#8249;</button><button type="button" class="ic dstep" data-dstep="1" aria-label="Следующий день">&#8250;</button><button type="button" class="btn ghost sm" data-evopen>+ Отметка</button></div></div><div class="dp-scroll">';
+  /* пары этого дня */
+  var ls=lessonsOn(d);
+  if(ls.length){
+    var nl=(k===tk)?nextLesson():null,cur=nl&&nl.l?nl.l.id:'';
+    h+='<div class="dles" role="list" aria-label="Пары">'+ls.map(function(l){return '<button type="button" role="listitem" class="dl'+(l.id===cur?(nl.now?' now':' next'):'')+'" data-home="grades">'+(l.time?'<b>'+l.time+'</b>':'')+'<span>'+esc(l.subj)+'</span></button>'}).join('')+'</div>';
+  }
   var nt=S.notes[k]||'';
-  h+='<button type="button" class="note-btn'+(nt?' has':'')+'" data-noteopen>'+(nt?esc(nt.length>110?nt.slice(0,110)+'…':nt):'Заметка к этому дню…')+'</button>';
+  h+='<button type="button" class="note-btn'+(nt?' has':'')+'" data-noteopen><span class="nbt">'+(nt?esc(nt.length>110?nt.slice(0,110)+'…':nt):'Заметка к этому дню…')+'</span></button>';
   if(over)h+='<button type="button" class="late-link" data-late>Просрочено задач: '+over+'. Разобрать</button>';
   if(ev.length)h+='<div class="evchips">'+ev.map(function(e){var t=evtBy(e.type);return '<span class="evchip" style="--c:'+cvar(t.c)+'"><i class="dot"></i><button type="button" class="evtx" data-eedit="'+e.id+'" aria-label="Изменить отметку"><b>'+esc(t.name)+'</b>'+(e.title?': '+esc(e.title):'')+(e.end?' <small>'+esc(rangeText(e.date,e.end))+'</small>':'')+'</button><button type="button" class="del" data-evstar="'+e.id+'" aria-label="'+(e.star?'Снять с главной':'Показывать на главной')+'" aria-pressed="'+(!!e.star)+'" style="color:'+(e.star?'var(--gold)':'var(--muted)')+'">'+IC(e.star?'starf':'star',18,1.8)+'</button><button type="button" class="del" data-evdel="'+e.id+'" aria-label="Убрать отметку">&times;</button></span>'}).join('')+'</div>';
   var dd=S.debts.filter(function(x){return !x.done&&x.due===k});
   if(dd.length)h+='<div class="evchips">'+dd.map(function(x){var kd=dkBy(x.kind);return '<span class="evchip" style="--c:var(--bad)"><i class="dot"></i><button type="button" class="evtx" data-debtgo="'+x.id+'" aria-label="Открыть долг"><b>Долг</b>: '+esc(x.subj)+' <small>'+esc(kd.name.toLowerCase())+'</small></button></span>'}).join('')+'</div>';
   var rows=tasks.concat(run);
-  h+=rows.length?'<ul>'+rows.map(function(t){return taskRow(t,{compact:true})}).join('')+'</ul>':(ev.length?'':'<p class="empty"><b>Дел на этот день нет.</b> Нажмите «+» внизу и впишите, что нужно сделать.</p>');
+  h+=rows.length?'<ul>'+rows.map(function(t){return taskRow(t,{compact:true})}).join('')+'</ul>':(ev.length?'':'<p class="empty"><b>Дел на этот день нет.</b></p>');
+  h+='<form class="dadd" id="dAdd" autocomplete="off"><input id="dAddText" type="text" maxlength="140" enterkeyhint="done" aria-label="Новое дело на этот день" placeholder="Дело на '+(k===tk?'сегодня':esc(dm(k)))+'…"><button type="submit" class="btn" aria-label="Добавить дело">'+IC('plus',20,2.4)+'</button></form>';
   h+='</div></div>';
   $('#dayPanel').innerHTML=h;
 }
@@ -1980,7 +2071,8 @@ function lessonPill(){
   return '<button type="button" class="card nl'+(x.now?' now':'')+'" data-home="grades" aria-label="'+(x.now?'Сейчас пара':'Следующая пара')+': '+esc(x.l.subj)+'"><small>'+(x.now?'Сейчас':'Следующая пара')+'</small><b>'+(x.l.time?'<em>'+x.l.time+'</em> · ':'')+esc(x.l.subj)+'</b></button>';
 }
 function renderCountdown(){
-  var box=$('#cdBox'),ne=nextEvent(),e=ne.ev,tk=ymd(today()),lp=lessonPill();
+  /* пары теперь показываются в панели дня, строка над календарём — только отсчёт */
+  var box=$('#cdBox'),ne=nextEvent(),e=ne.ev,tk=ymd(today()),lp='';
   if(!e){box.innerHTML='<button type="button" class="card cd none" data-cdnew>'+IC('star',24,1.7)+'<span>'+(lp?'Отметьте экзамен или дедлайн, здесь появится отсчёт.':'Нет ближайших событий. Отметьте в календаре экзамен или дедлайн, и здесь появится отсчёт.')+'</span></button>'+lp;return}
   var t=evtBy(e.type),name=t.name+(e.title?': '+e.title:''),big,small;
   if(e.date>tk){var d=daysBetween(tk,e.date);big=String(d);small=plural(d,['день','дня','дней'])}
@@ -1994,7 +2086,8 @@ function renderHome(){
 function openHomeItem(id){
   if(id==='notes'){ui.sel=ymd(today());ui.cal={y:td.getFullYear(),m:td.getMonth()};openDaySheet('note');return}
   if(id==='events'){ui.sel=ymd(today());openDaySheet('ev');return}
-  if(id==='debts'){go('grades');setTimeout(function(){var c=$('#debtCard');if(c&&c.scrollIntoView)c.scrollIntoView({behavior:'smooth',block:'start'})},60);return}
+  if(id==='debts'){gTab('debt');return}
+  if(id==='grades')ui.gtab='sch';
   go(id);
 }
 /* раздел «Ещё» в нижней панели: привычки, спорт, финансы, фокус + настройки */
@@ -2102,8 +2195,9 @@ function tasksFor(scope,sel){
 function ulRows(arr){return '<ul>'+arr.map(function(t){return taskRow(t)}).join('')+'</ul>'}
 function groupHead(txt,n,cls){return '<div class="tg-h'+(cls?' '+cls:'')+'"><span>'+txt+'</span><span>'+n+'</span></div>'}
 function renderTasks(){
-  $$('#tView button').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.tv===ui.tview))});
+  $$('#tView button').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.tv===ui.tview));b.hidden=(b.dataset.tv===ui.tview)});
   $('#tvList').hidden=(ui.tview!=='list');$('#tvProg').hidden=(ui.tview!=='prog');
+  $('#scopeSeg').hidden=(ui.tview!=='list');$('#tvTitle').hidden=(ui.tview==='list');
   if(ui.tview==='prog'){renderProgress();return}
   var tk=ymd(today()),sc=ui.scope,d=parse(ui.tsel),lab='';
   $$('#scopeSeg button').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.scope===sc))});
@@ -2140,6 +2234,22 @@ function renderTasks(){
   }
   $('#tList').innerHTML=h;
 }
+/* быстрое дело прямо из панели дня на главной */
+function addTaskDay(){
+  var inp=$('#dAddText');if(!inp)return;var raw=inp.value.trim();
+  if(!raw){inp.focus();return}
+  var p=parseQuick(raw,{force:'task',defDate:ui.sel,defScope:'day'});
+  if(!p.valid){toast(p.hint||'Впишите, что нужно сделать.');return}
+  var id=addTask(p.text,p.date,p.cat,p.pri,p.scope,p.end,p.time);
+  if(p.date!==ui.sel&&p.scope==='day'){var nd=parse(p.date);ui.sel=p.date;ui.cal={y:nd.getFullYear(),m:nd.getMonth()}}
+  refresh();var ni=$('#dAddText');if(ni)ni.focus();
+  toast('Дело добавлено','Отменить',function(){S.tasks=S.tasks.filter(function(t){return t.id!==id});tomb(id);save();refresh()});
+}
+/* соседний день свайпом по панели дня */
+function stepDay(dir){
+  flushNote();var nd=addDays(parse(ui.sel),dir);ui.sel=ymd(nd);ui.tsel=ui.sel;ui.cal={y:nd.getFullYear(),m:nd.getMonth()};ui.evOpen=false;renderCalScreen();
+  var dp=$('#dayPanel .dpanel');if(dp&&motion()!=='calm'){dp.classList.add(dir>0?'in-r':'in-l')}
+}
 function addTaskInline(){
   var inp=$('#tAddText'),raw=inp.value.trim();
   if(!raw){inp.focus();return}
@@ -2157,6 +2267,7 @@ function addTaskInline(){
   toast('Задача добавлена','Отменить',function(){S.tasks=S.tasks.filter(function(t){return t.id!==id});tomb(id);save();refresh()});
 }
 function shiftSel(dir){
+  if(tcalWeek()){var w=addDays(parse(ui.tsel),7*dir);ui.tsel=ymd(w);ui.sel=ui.tsel;ui.cal={y:w.getFullYear(),m:w.getMonth()};renderTasks();return}
   var d=new Date(ui.cal.y,ui.cal.m+dir,1),n=today();
   ui.cal={y:d.getFullYear(),m:d.getMonth()};
   if(ui.scope==='month')ui.tsel=(d.getFullYear()===n.getFullYear()&&d.getMonth()===n.getMonth())?ymd(n):ymd(d);
@@ -3003,6 +3114,8 @@ function delLesson(){
   toast('Пара удалена','Вернуть',function(){untomb(id);l.u=Date.now();S.lessons.push(l);save();refresh()});
 }
 /* ---------- Pro: подписка ---------- */
+/* PRO_ON=false: подписка выключена до запуска платных функций (решение владельца 2026-10-15). Код оставлен, включается одним флагом. */
+var PRO_ON=false;
 var PRO_FREE_EV=20,PRO={d:null,at:0,busy:false,tries:0};
 try{PRO.d=JSON.parse(localStorage.getItem('wemed.pro')||'null')}catch(e){}
 function proD(){return PRO.d||{}}
@@ -3020,6 +3133,7 @@ function proLine(){
 function proWaiting(){try{var t=+localStorage.getItem('wemed.pw')||0;return t&&Date.now()-t<1800000}catch(e){return false}}
 function proLoad(force){try{return proLoad2(force)}catch(e){PRO.busy=false;return Promise.resolve()}}
 function proLoad2(force){
+  if(!PRO_ON)return Promise.resolve();
   var cl=(typeof trkClient==='function')?trkClient():null;
   if(!cl||PRO.busy)return Promise.resolve();
   if(!force&&PRO.at&&Date.now()-PRO.at<600000)return Promise.resolve();
@@ -3037,7 +3151,7 @@ function proLoad2(force){
 }
 function evActive(){var t=ymd(today());return S.events.filter(function(e){return !e.demo&&(e.end||e.date)>=t}).length}
 function evGate(){
-  if(isPro()||evActive()<PRO_FREE_EV)return false;
+  if(!PRO_ON||isPro()||evActive()<PRO_FREE_EV)return false;
   if(openOv)closeOverlay();
   openPro('events');return true;
 }
@@ -3047,6 +3161,7 @@ function openPro(reason){
   renderDaySheet();showOverlay('dayOv');proLoad(true);
 }
 function proCard(){
+  if(!PRO_ON)return '';
   return '<button type="button" class="procard" data-proopen><span><b>WeMed Pro</b><span class="d" id="proCardLine">'+esc(proLine())+'</span></span><span class="go">'+(isPro()?'Подробнее':'Открыть')+'</span></button>';
 }
 var PRO_PRICE={month:[149,'1 месяц'],year:[990,'1 год']};
@@ -3171,7 +3286,13 @@ function delDebt(){
   var d=S.debts.splice(i,1)[0];tomb(id);save();closeOverlay();refresh();
   toast('Долг удалён','Вернуть',function(){untomb(id);d.u=Date.now();S.debts.push(d);save();refresh()});
 }
+/* «Учёба» по вкладкам: расписание, долги, оценки */
+function gTab(tab){ui.gtab=tab;if(ui.screen!=='grades')go('grades');else renderGrades();try{window.scrollTo(0,0)}catch(e){}}
 function renderGrades(){
+  var gt=ui.gtab||'sch',od=S.debts.filter(function(x){return !x.done}).length;
+  $$('#grTab button').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.gtab===gt))});
+  $('#schCard').hidden=gt!=='sch';$('#debtCard').hidden=gt!=='debt';$('#grJournal').hidden=gt!=='gr';
+  var gc=$('#gtDebt');gc.hidden=!od;gc.textContent=od;
   renderSchedule();renderDebts();
   var subs=gSubjects(),all=avgOf(S.grades),t0=today();
   var sel=$('#grKind');if(!sel.options.length){sel.innerHTML=GKINDS.map(function(k){return '<option>'+k+'</option>'}).join('')}
@@ -3788,8 +3909,9 @@ document.addEventListener('click',function(e){
   if((el=t.closest('[data-dbkind]'))){dbKeep();ui.db.kind=el.dataset.dbkind;renderDaySheet();return}
   if(t.closest('#dbSave')){saveDebt();return}
   if(t.closest('#dbDel')){delDebt();return}
-  if((el=t.closest('[data-debtgo]'))){go('grades');setTimeout(function(){var c=$('#debtCard');if(c&&c.scrollIntoView)c.scrollIntoView({behavior:'smooth',block:'start'})},60);return}
-  if(t.closest('[data-proopen]')){closeOverlay();openPro('');return}
+  if((el=t.closest('[data-debtgo]'))){gTab('debt');return}
+  if((el=t.closest('[data-gtab]'))){buzz();gTab(el.dataset.gtab);return}
+  if(t.closest('[data-proopen]')){if(!PRO_ON)return;closeOverlay();openPro('');return}
   if((el=t.closest('[data-proplan]'))){ui.proPlan=el.dataset.proplan;renderDaySheet();return}
   if(t.closest('[data-proauto]')){ui.proAuto=!ui.proAuto;renderDaySheet();return}
   if(t.closest('#proPay')){proPay();return}
@@ -3818,6 +3940,8 @@ document.addEventListener('click',function(e){
     if(nc&&nc.getAttribute('aria-checked')==='true'){nc.classList.add('pop');sparks(cr.left+cr.width/2,cr.top+cr.height/2)}
     return}
   if(t.closest('#moreBtn')){buzz();openMore();return}
+  if((el=t.closest('[data-dstep]'))){stepDay(+el.dataset.dstep);return}
+  if((el=t.closest('[data-tmenu]'))){buzz();openTaskActs(el.dataset.tmenu);return}
   if((el=t.closest('[data-morego]'))){var mg=el.dataset.morego;closeOverlay();go(mg);return}
   if((el=t.closest('[data-moreact]'))){var ma=el.dataset.moreact;closeOverlay();if(ma==='pal')openPalette();else $('#acBtn').click();return}
   if((el=t.closest('[data-ttime]'))){openTaskTime(el.dataset.ttime);return}
@@ -3957,6 +4081,7 @@ $('#cNext').addEventListener('click',function(){shiftCal(1)});
 $('#cToday').addEventListener('click',function(){flushNote();var n=today();ui.cal={y:n.getFullYear(),m:n.getMonth()};ui.sel=ymd(n);ui.evOpen=false;renderCalScreen()});
 $('#tPrev').addEventListener('click',function(){shiftSel(-1)});
 $('#tNext').addEventListener('click',function(){shiftSel(1)});
+$('#tExp').addEventListener('click',toggleTcal);
 $('#tToday').addEventListener('click',function(){var n=today();ui.tsel=ymd(n);ui.sel=ui.tsel;ui.cal={y:n.getFullYear(),m:n.getMonth()};renderTasks()});
 $('#mPrev').addEventListener('click',function(){var d=new Date(ui.mon.y,ui.mon.m-1,1);ui.mon={y:d.getFullYear(),m:d.getMonth()};renderMoney()});
 $('#mNext').addEventListener('click',function(){var d=new Date(ui.mon.y,ui.mon.m+1,1);ui.mon={y:d.getFullYear(),m:d.getMonth()};renderMoney()});
@@ -4034,6 +4159,8 @@ function swEnd(cancel){
 document.addEventListener('pointerup',function(e){if(e.isPrimary)swEnd(false)},{passive:true});
 document.addEventListener('pointercancel',function(e){if(e.isPrimary)swEnd(true)},{passive:true});
 document.addEventListener('click',function(e){if(SW.swallow){e.stopPropagation();e.preventDefault()}},true);
+/* меню задачи: сначала закрываем его, потом обычный обработчик выполняет действие */
+document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('.tacts .tact');if(b&&openOv==='dayOv'&&ui.sheet==='tact')closeOverlay()},true);
 $('#qaMore').addEventListener('click',function(){ui.qa.more=!ui.qa.more;renderQA()});
 $('#qaForm').addEventListener('submit',function(e){e.preventDefault();commitQuick()});
 $('#qaText').addEventListener('keydown',function(e){if(e.key==='Enter'||e.keyCode===13){e.preventDefault();var p=qaParse();if(p.valid&&this.value.trim())commitQuick();else renderQA()}});
@@ -4044,6 +4171,11 @@ $('#tAddForm').addEventListener('submit',function(e){e.preventDefault();addTaskI
   var g=$('#cGrid'),x0=0,y0=0,on=false;
   g.addEventListener('touchstart',function(e){var t=e.touches[0];x0=t.clientX;y0=t.clientY;on=true},{passive:true});
   g.addEventListener('touchend',function(e){if(!on)return;on=false;var t=e.changedTouches[0],dx=t.clientX-x0,dy=t.clientY-y0;if(Math.abs(dx)>52&&Math.abs(dx)>Math.abs(dy)*1.6)shiftCal(dx<0?1:-1)},{passive:true});
+  /* свайп по панели дня — соседний день (не мешает свайпам по задачам) */
+  var dpn=$('#dayPanel'),dx0=0,dy0=0,don=false;
+  dpn.addEventListener('touchstart',function(e){if(e.target.closest('li.task,input,textarea,.dles')){don=false;return}var t=e.touches[0];dx0=t.clientX;dy0=t.clientY;don=true},{passive:true});
+  dpn.addEventListener('touchend',function(e){if(!don)return;don=false;var t=e.changedTouches[0],dx=t.clientX-dx0,dy=t.clientY-dy0;if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.8)stepDay(dx<0?1:-1)},{passive:true});
+  document.addEventListener('submit',function(e){if(e.target.id==='dAdd'){e.preventDefault();addTaskDay()}});
   if(window.visualViewport){visualViewport.addEventListener('resize',vvSync);visualViewport.addEventListener('scroll',vvSync)}
   window.addEventListener('resize',vvSync);
 })();
