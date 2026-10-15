@@ -155,6 +155,11 @@ a{color:var(--g);font-weight:700}
       <div class="card"><h2>Последние регистрации</h2><div class="hint">без адресов, только время и способ</div><div id="rec"></div></div>
     </div>
 
+    <div class="sec">Замечания и предложения</div>
+    <div class="card" style="margin-top:12px" id="fbCard"><h2>Сообщения пользователей</h2><div class="hint">из раздела «Замечания и предложения» в приложении; новые сверху</div>
+      <div class="row" style="margin:10px 0;flex-wrap:wrap"><button class="btn" id="fbAll">Показать обработанные</button></div>
+      <div id="fblist"><div class="sub">Загружаем…</div></div></div>
+
     <div class="sec">Пользователи</div>
     <div class="card" style="margin-top:12px"><h2>Список</h2><div class="hint">ник в Telegram или почта, кто и когда заходил. Нужны, чтобы потом сопоставлять с подписками.</div>
       <div class="row" style="margin:10px 0;flex-wrap:wrap"><input id="uq" class="sinp" type="search" placeholder="Поиск: ник, почта или Telegram id" autocomplete="off"><button class="btn" id="csv">Скачать CSV</button></div>
@@ -298,8 +303,22 @@ $('#csv').addEventListener('click',function(){
     var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'text/csv;charset=utf-8'}));a.download='wemed-users.csv';document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},500);
   }).catch(function(e){alert('Не получилось: '+(e&&e.message||e))});
 });
+/* обращения пользователей (support.sql: admin_feedback, admin_feedback_done) */
+var FB_ALL=false,FBK={bug:'Ошибка',idea:'Идея',question:'Вопрос',other:'Другое'};
+function loadFeedback(){
+  return Promise.resolve(SB.rpc('admin_feedback',{p_limit:300})).then(function(r){
+    if(r.error)throw r.error;
+    var a=(r.data||[]).filter(function(f){return FB_ALL||f.status!=='done'});
+    $('#fblist').innerHTML=a.map(function(f){
+      return '<div class="ur" style="align-items:flex-start'+(f.status==='done'?';opacity:.55':'')+'"><div class="a"><div class="nm">'+esc(FBK[f.kind]||f.kind)+' · '+esc(new Date(f.created_at).toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}))+'</div><div style="white-space:pre-wrap;margin:6px 0;color:var(--ink)">'+esc(f.body)+'</div><div class="m">'+esc(f.email||'без аккаунта')+(f.contact?' · контакт: '+esc(f.contact):'')+' · '+esc(f.platform||'')+'</div></div><div class="b"><button class="btn" data-fbdone="'+f.id+'" data-v="'+(f.status==='done'?'0':'1')+'">'+(f.status==='done'?'Вернуть':'Обработано')+'</button></div></div>';
+    }).join('')||'<div class="sub">'+(FB_ALL?'Сообщений пока нет':'Новых сообщений нет')+'</div>';
+  }).catch(function(e){var m=String(e&&e.message||e);$('#fblist').innerHTML='<div class="sub">'+(/admin_feedback|does not exist|function/.test(m)?'Запустите support.sql в Supabase, чтобы видеть сообщения.':'Не получилось загрузить: '+esc(m))+'</div>'});
+}
+$('#fbAll').addEventListener('click',function(){FB_ALL=!FB_ALL;this.textContent=FB_ALL?'Только новые':'Показать обработанные';loadFeedback()});
+document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-fbdone]');if(!b)return;b.disabled=true;Promise.resolve(SB.rpc('admin_feedback_done',{p_id:+b.dataset.fbdone,p_done:b.dataset.v==='1'})).then(loadFeedback).catch(function(){b.disabled=false})});
 function load(){
   $('#dmsg').textContent='Загружаем…';$('#dmsg').className='msg';
+  loadFeedback();   /* сообщения грузятся независимо от статистики */
   return SB.rpc('admin_stats').then(function(r){
     if(r.error)throw r.error;
     $('#dmsg').textContent='';show('dash');window.__today=r.data.today;render(r.data);loadUsers();Promise.resolve(SB.rpc('admin_money')).then(function(x){renderMoney(x&&!x.error?x.data:null)}).catch(function(){renderMoney(null)});

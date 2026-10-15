@@ -828,6 +828,31 @@ body:not([data-screen=cal]) :is(.dictum,.demo-pill){display:none!important}
 .gtab button{display:inline-flex;align-items:center;justify-content:center;gap:6px}
 .gtab .cnt{font-style:normal;min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:var(--bad);color:var(--surface);font:800 12px/20px var(--f-body)}
 
+/* ---------- «первая версия», согласие, замечания, удаление ---------- */
+.beta{display:flex;flex-direction:column;gap:4px;padding:12px 14px;border-radius:18px;background:color-mix(in srgb,var(--accent) 13%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 45%,transparent);margin-bottom:12px}
+.beta b{font:700 14px var(--f-display);color:var(--fg)}
+.beta span{font-size:13.5px;line-height:1.45;color:var(--fg)}
+.beta .linkbtn{align-self:flex-start;margin-top:2px;padding:4px 0}
+.pdc{display:flex;gap:10px;align-items:flex-start;font-size:13.5px;line-height:1.45;color:var(--fg);cursor:pointer;margin:4px 0}
+.pdc input{flex:none;width:22px;height:22px;min-height:0;margin:1px 0 0;accent-color:var(--accent);cursor:pointer}
+.pdc a,.legal a,.sub a{color:var(--lt);font-weight:600}
+.legal{font-size:12.5px;color:var(--muted);margin:10px 0 0}
+.pdc-ask{display:flex;flex-direction:column;gap:8px;padding:12px 14px;border-radius:18px;background:var(--well);box-shadow:inset 0 0 0 1.5px var(--warn);margin-bottom:12px}
+.pdc-ask b{font-weight:700}
+.pdc-ask span{font-size:13.5px;color:var(--muted)}
+.pdc-ask .btn{align-self:flex-start}
+.acmore{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.fbcard{display:flex;align-items:center;gap:12px;width:100%;text-align:left;color:var(--fg);font:inherit;cursor:pointer;padding:14px 16px!important;border-radius:20px}
+.fbcard .ico{color:var(--lt);flex:none}
+.fbcard b{display:block;font:600 14px var(--f-display)}
+.fbcard small{display:block;font-size:12.5px;color:var(--muted);margin-top:2px}
+.fb-text{min-height:120px;font-size:15.5px;line-height:1.45;resize:vertical}
+.fb-ok{display:flex;flex-direction:column;gap:4px;padding:16px;border-radius:18px;background:color-mix(in srgb,var(--good) 14%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--good) 50%,transparent)}
+.fb-ok b{font:700 15px var(--f-display)}
+.fb-ok span{font-size:13.5px;color:var(--muted)}
+html:is([data-fam=reanim],[data-fam=neon],[data-fam=acid],[data-fam=beton],[data-fam=clean]) :is(.beta,.pdc-ask,.fb-ok){border-radius:var(--Rm)}
+html:is([data-fam=reanim],[data-fam=neon],[data-fam=acid],[data-fam=beton],[data-fam=clean]) .fbcard{border-radius:var(--Rb)}
+
 /* ---------- вход по коду из письма ---------- */
 input.otp{font:600 24px var(--f-display);letter-spacing:.35em;text-align:center;min-height:58px}
 input.otp::placeholder{letter-spacing:.35em}
@@ -1072,6 +1097,7 @@ html[data-fam=clean] :is(.card,.notice,.rail){border:1px solid color-mix(in srgb
     <div class="docks" id="docks"></div>
     <div class="sec-h" id="ribH"><b>Ещё</b></div>
     <div class="ribbon" id="ribbon"></div>
+    <button type="button" class="card fbcard" data-fbopen><svg class="ico" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="f" d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v8a2.5 2.5 0 0 1-2.5 2.5H10l-4.5 3.5V17H6.5A2.5 2.5 0 0 1 4 14.5z"/><path d="M8.5 9h7M8.5 12.5h4.5"/></svg><span><b>Замечания и предложения</b><small>Нашли ошибку или есть идея? Напишите нам</small></span></button>
     <div id="dayPanel"></div>
    </div>
   </section>
@@ -1509,7 +1535,7 @@ function homeLists(m,r){
 }
 function profNorm(p){
   p=p&&typeof p==='object'?p:{};var h=homeLists(p.main,p.more);
-  return {name:String(p.name||'').replace(/\s+/g,' ').trim().slice(0,30),hue:(isFinite(+p.hue)&&p.hue!==''&&p.hue!==null&&+p.hue>=0&&+p.hue<=360)?Math.round(+p.hue):-1,nav:(p.nav==='right'||p.nav==='left')?p.nav:'bottom',lite:!!p.lite,la:p.la===0?0:1,sys:!!p.sys,vib:p.vib!==false,mo:(p.mo==='calm'||p.mo==='max')?p.mo:'live',onb:p.onb?1:0,main:h.main,more:h.more,u:+p.u||0};
+  return {name:String(p.name||'').replace(/\s+/g,' ').trim().slice(0,30),hue:(isFinite(+p.hue)&&p.hue!==''&&p.hue!==null&&+p.hue>=0&&+p.hue<=360)?Math.round(+p.hue):-1,nav:(p.nav==='right'||p.nav==='left')?p.nav:'bottom',lite:!!p.lite,la:p.la===0?0:1,sys:!!p.sys,vib:p.vib!==false,mo:(p.mo==='calm'||p.mo==='max')?p.mo:'live',pdc:String(p.pdc||'').slice(0,20),onb:p.onb?1:0,main:h.main,more:h.more,u:+p.u||0};
 }
 function blank(){return {v:2,del:{},grades:[],workouts:[],wtypes:[],evtypes:[],habits:[],hmarks:[],tasks:[],notes:{},nu:{},events:[],tx:[],limit:0,focus:[],lessons:[],debts:[],prof:profNorm({}),timer:null,palette:null,demo:false,demoNotes:[],demoLimit:false}}
 var MAPC={nerv:'study',card:'work',resp:'health',dig:'home',musc:'sport',skel:'study'};
@@ -1659,7 +1685,7 @@ function toast(msg,label,fn){
   if(label){var b=document.createElement('button');b.type='button';b.textContent=label;b.addEventListener('click',function(){fn();hideToast()});el.appendChild(b)}
   el.hidden=false;clearTimeout(toastT);toastT=setTimeout(hideToast,label?6000:2800);
 }
-var ICONS={"dash": "<rect class=\"f\" x=\"3.5\" y=\"3.5\" width=\"7.5\" height=\"10\" rx=\"2.4\"/><rect x=\"13\" y=\"3.5\" width=\"7.5\" height=\"6\" rx=\"2.4\"/><rect class=\"f\" x=\"13\" y=\"11.5\" width=\"7.5\" height=\"9\" rx=\"2.4\"/><rect x=\"3.5\" y=\"15.5\" width=\"7.5\" height=\"5\" rx=\"2.4\"/>", "tasks": "<rect class=\"f\" x=\"4\" y=\"3\" width=\"16\" height=\"18\" rx=\"4.6\"/><path d=\"M8.2 9.2l1.4 1.4 2.6-2.8M14.2 9.8h2.6M8.2 15.2l1.4 1.4 2.6-2.8M14.2 15.8h2.6\"/>", "flame": "<path class=\"f\" d=\"M12 2.8c.8 3.2 5.2 5 5.2 10.2a5.2 5.2 0 01-10.4 0c0-2.1 1-3.6 2.2-4.8.3 1.6 1 2.5 2 3 .2-3 .1-5 1-8.4z\"/>", "sport": "<rect class=\"f\" x=\"2.8\" y=\"9\" width=\"3\" height=\"6\" rx=\"1.2\"/><rect class=\"f\" x=\"5.8\" y=\"6.5\" width=\"3.2\" height=\"11\" rx=\"1.5\"/><rect class=\"f\" x=\"15\" y=\"6.5\" width=\"3.2\" height=\"11\" rx=\"1.5\"/><rect class=\"f\" x=\"18.2\" y=\"9\" width=\"3\" height=\"6\" rx=\"1.2\"/><path d=\"M9 12h6\"/>", "cap": "<path class=\"f\" d=\"M2.5 9.2L12 4.6l9.5 4.6-9.5 4.6-9.5-4.6z\"/><path d=\"M6.6 11.7v4.3c0 1.4 2.5 2.9 5.4 2.9s5.4-1.5 5.4-2.9v-4.3M21.5 9.2v5\"/>", "wallet": "<rect class=\"f\" x=\"3\" y=\"5.5\" width=\"18\" height=\"14\" rx=\"4.2\"/><path d=\"M3 10.2h18\"/><circle cx=\"16.6\" cy=\"14.7\" r=\"1.15\" fill=\"currentColor\" stroke=\"none\"/>", "timer": "<circle class=\"f\" cx=\"12\" cy=\"13.5\" r=\"7.5\"/><path d=\"M12 9.8v3.9l2.5 1.6M9.5 2.8h5\"/>", "note": "<path class=\"f\" d=\"M5 4h14v10.6L14.6 20H5z\"/><path d=\"M14.6 20v-4.2a1.2 1.2 0 011.2-1.2H19M8.5 8.5h7M8.5 12h4\"/>", "spark": "<path class=\"f\" d=\"M11 3.2l2 5 5 2-5 2-2 5-2-5-5-2 5-2z\"/><path d=\"M18.5 15.5v4M16.5 17.5h4\"/>", "bell": "<path class=\"f\" d=\"M6 17v-5.5a6 6 0 0112 0V17l1.5 2h-15z\"/><path d=\"M10 21.5h4\"/>", "palette": "<path class=\"f\" d=\"M12 3a9 9 0 100 18c1.2 0 1.8-.8 1.8-1.7 0-1.3-1-1.5-1-2.6 0-1 .8-1.7 1.9-1.7H17a4 4 0 004-4c0-4.4-4-8-9-8z\"/><circle cx=\"7.6\" cy=\"11\" r=\"1\" fill=\"currentColor\" stroke=\"none\"/><circle cx=\"10\" cy=\"7.4\" r=\"1\" fill=\"currentColor\" stroke=\"none\"/><circle cx=\"14.4\" cy=\"7.4\" r=\"1\" fill=\"currentColor\" stroke=\"none\"/>", "plus": "<path d=\"M12 5v14M5 12h14\"/>", "l": "<path d=\"M15 6l-6 6 6 6\"/>", "r": "<path d=\"M9 6l6 6-6 6\"/>", "clock": "<circle class=\"f\" cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M12 7v5l3 2\"/>", "edit": "<path class=\"f\" d=\"M4 20l1-4L16.5 4.5a2.1 2.1 0 013 3L8 19z\"/><path d=\"M14.5 6.5l3 3\"/>", "mic": "<rect class=\"f\" x=\"9\" y=\"3\" width=\"6\" height=\"12\" rx=\"3\"/><path d=\"M5.5 11a6.5 6.5 0 0013 0M12 17.5V21\"/>", "check": "<path d=\"M5 12.5l4.5 4.5L19 7.5\"/>", "arrow": "<path d=\"M5 12h14M13 6l6 6-6 6\"/>", "up": "<path d=\"M6 14l6-6 6 6\"/>", "down": "<path d=\"M6 10l6 6 6-6\"/>", "star": "<path d=\"M12 3.6l2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 17l-5.2 2.8 1-5.9L3.5 9.8l5.9-.8z\"/>", "starf": "<path d=\"M12 3.6l2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 17l-5.2 2.8 1-5.9L3.5 9.8l5.9-.8z\" fill=\"currentColor\" fill-opacity=\".9\"/>", "user": "<circle class=\"f\" cx=\"12\" cy=\"8\" r=\"4\"/><path d=\"M4.5 20.5c0-4 3.4-6.5 7.5-6.5s7.5 2.5 7.5 6.5\"/>", "cal": "<rect class=\"f\" x=\"3.5\" y=\"5\" width=\"17\" height=\"15.5\" rx=\"4\"/><path d=\"M3.5 10h17M8 3v4M16 3v4\"/>", "swap": "<path d=\"M7 4v14M3.5 14.5L7 18l3.5-3.5M17 20V6M13.5 9.5L17 6l3.5 3.5\"/>", "book": "<path class=\"f\" d=\"M5 4.5h10.5A3.5 3.5 0 0119 8v12H8.5A3.5 3.5 0 015 16.5z\"/><path d=\"M5 16.5A3.5 3.5 0 018.5 13H19\"/>", "trash": "<path d=\"M5 7h14M10 7V4.5h4V7M7 7l.8 12.5h8.4L17 7\"/>", "x": "<path d=\"M6 6l12 12M18 6L6 18\"/>", "flag": "<path class=\"f\" d=\"M5 4v17\"/><path d=\"M5 4.5h12l-2 4 2 4H5\"/>", "sliders": "<path d=\"M4 7h9M17 7h3M4 17h3M11 17h9\"/><circle class=\"f\" cx=\"15\" cy=\"7\" r=\"2.3\"/><circle class=\"f\" cx=\"9\" cy=\"17\" r=\"2.3\"/>", "cloud": "<path class=\"f\" d=\"M7 18.5a4.5 4.5 0 01-.6-8.96A6 6 0 0118 10.5a4 4 0 01-.5 8z\"/>", "up2": "<path d=\"M7 17L17 7M9 7h8v8\"/>", "dn": "<path d=\"M5 12.5l4.5 4.5L19 7.5\"/>", "more": "<rect class=\"f\" x=\"3.5\" y=\"3.5\" width=\"7.5\" height=\"7.5\" rx=\"2.4\"/><rect x=\"13\" y=\"3.5\" width=\"7.5\" height=\"7.5\" rx=\"2.4\"/><rect x=\"3.5\" y=\"13\" width=\"7.5\" height=\"7.5\" rx=\"2.4\"/><circle class=\"f\" cx=\"16.75\" cy=\"16.75\" r=\"3.9\"/>", "dots": "<circle cx=\"5.5\" cy=\"12\" r=\"1.6\"/><circle cx=\"12\" cy=\"12\" r=\"1.6\"/><circle cx=\"18.5\" cy=\"12\" r=\"1.6\"/>", "chart": "<path d=\"M4 20V10M10 20V4M16 20v-7M21 20H3\"/>"};
+var ICONS={"dash": "<rect class=\"f\" x=\"3.5\" y=\"3.5\" width=\"7.5\" height=\"10\" rx=\"2.4\"/><rect x=\"13\" y=\"3.5\" width=\"7.5\" height=\"6\" rx=\"2.4\"/><rect class=\"f\" x=\"13\" y=\"11.5\" width=\"7.5\" height=\"9\" rx=\"2.4\"/><rect x=\"3.5\" y=\"15.5\" width=\"7.5\" height=\"5\" rx=\"2.4\"/>", "tasks": "<rect class=\"f\" x=\"4\" y=\"3\" width=\"16\" height=\"18\" rx=\"4.6\"/><path d=\"M8.2 9.2l1.4 1.4 2.6-2.8M14.2 9.8h2.6M8.2 15.2l1.4 1.4 2.6-2.8M14.2 15.8h2.6\"/>", "flame": "<path class=\"f\" d=\"M12 2.8c.8 3.2 5.2 5 5.2 10.2a5.2 5.2 0 01-10.4 0c0-2.1 1-3.6 2.2-4.8.3 1.6 1 2.5 2 3 .2-3 .1-5 1-8.4z\"/>", "sport": "<rect class=\"f\" x=\"2.8\" y=\"9\" width=\"3\" height=\"6\" rx=\"1.2\"/><rect class=\"f\" x=\"5.8\" y=\"6.5\" width=\"3.2\" height=\"11\" rx=\"1.5\"/><rect class=\"f\" x=\"15\" y=\"6.5\" width=\"3.2\" height=\"11\" rx=\"1.5\"/><rect class=\"f\" x=\"18.2\" y=\"9\" width=\"3\" height=\"6\" rx=\"1.2\"/><path d=\"M9 12h6\"/>", "cap": "<path class=\"f\" d=\"M2.5 9.2L12 4.6l9.5 4.6-9.5 4.6-9.5-4.6z\"/><path d=\"M6.6 11.7v4.3c0 1.4 2.5 2.9 5.4 2.9s5.4-1.5 5.4-2.9v-4.3M21.5 9.2v5\"/>", "wallet": "<rect class=\"f\" x=\"3\" y=\"5.5\" width=\"18\" height=\"14\" rx=\"4.2\"/><path d=\"M3 10.2h18\"/><circle cx=\"16.6\" cy=\"14.7\" r=\"1.15\" fill=\"currentColor\" stroke=\"none\"/>", "timer": "<circle class=\"f\" cx=\"12\" cy=\"13.5\" r=\"7.5\"/><path d=\"M12 9.8v3.9l2.5 1.6M9.5 2.8h5\"/>", "note": "<path class=\"f\" d=\"M5 4h14v10.6L14.6 20H5z\"/><path d=\"M14.6 20v-4.2a1.2 1.2 0 011.2-1.2H19M8.5 8.5h7M8.5 12h4\"/>", "spark": "<path class=\"f\" d=\"M11 3.2l2 5 5 2-5 2-2 5-2-5-5-2 5-2z\"/><path d=\"M18.5 15.5v4M16.5 17.5h4\"/>", "bell": "<path class=\"f\" d=\"M6 17v-5.5a6 6 0 0112 0V17l1.5 2h-15z\"/><path d=\"M10 21.5h4\"/>", "palette": "<path class=\"f\" d=\"M12 3a9 9 0 100 18c1.2 0 1.8-.8 1.8-1.7 0-1.3-1-1.5-1-2.6 0-1 .8-1.7 1.9-1.7H17a4 4 0 004-4c0-4.4-4-8-9-8z\"/><circle cx=\"7.6\" cy=\"11\" r=\"1\" fill=\"currentColor\" stroke=\"none\"/><circle cx=\"10\" cy=\"7.4\" r=\"1\" fill=\"currentColor\" stroke=\"none\"/><circle cx=\"14.4\" cy=\"7.4\" r=\"1\" fill=\"currentColor\" stroke=\"none\"/>", "plus": "<path d=\"M12 5v14M5 12h14\"/>", "l": "<path d=\"M15 6l-6 6 6 6\"/>", "r": "<path d=\"M9 6l6 6-6 6\"/>", "clock": "<circle class=\"f\" cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M12 7v5l3 2\"/>", "edit": "<path class=\"f\" d=\"M4 20l1-4L16.5 4.5a2.1 2.1 0 013 3L8 19z\"/><path d=\"M14.5 6.5l3 3\"/>", "mic": "<rect class=\"f\" x=\"9\" y=\"3\" width=\"6\" height=\"12\" rx=\"3\"/><path d=\"M5.5 11a6.5 6.5 0 0013 0M12 17.5V21\"/>", "check": "<path d=\"M5 12.5l4.5 4.5L19 7.5\"/>", "arrow": "<path d=\"M5 12h14M13 6l6 6-6 6\"/>", "up": "<path d=\"M6 14l6-6 6 6\"/>", "down": "<path d=\"M6 10l6 6 6-6\"/>", "star": "<path d=\"M12 3.6l2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 17l-5.2 2.8 1-5.9L3.5 9.8l5.9-.8z\"/>", "starf": "<path d=\"M12 3.6l2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 17l-5.2 2.8 1-5.9L3.5 9.8l5.9-.8z\" fill=\"currentColor\" fill-opacity=\".9\"/>", "user": "<circle class=\"f\" cx=\"12\" cy=\"8\" r=\"4\"/><path d=\"M4.5 20.5c0-4 3.4-6.5 7.5-6.5s7.5 2.5 7.5 6.5\"/>", "cal": "<rect class=\"f\" x=\"3.5\" y=\"5\" width=\"17\" height=\"15.5\" rx=\"4\"/><path d=\"M3.5 10h17M8 3v4M16 3v4\"/>", "swap": "<path d=\"M7 4v14M3.5 14.5L7 18l3.5-3.5M17 20V6M13.5 9.5L17 6l3.5 3.5\"/>", "book": "<path class=\"f\" d=\"M5 4.5h10.5A3.5 3.5 0 0119 8v12H8.5A3.5 3.5 0 015 16.5z\"/><path d=\"M5 16.5A3.5 3.5 0 018.5 13H19\"/>", "trash": "<path d=\"M5 7h14M10 7V4.5h4V7M7 7l.8 12.5h8.4L17 7\"/>", "x": "<path d=\"M6 6l12 12M18 6L6 18\"/>", "flag": "<path class=\"f\" d=\"M5 4v17\"/><path d=\"M5 4.5h12l-2 4 2 4H5\"/>", "sliders": "<path d=\"M4 7h9M17 7h3M4 17h3M11 17h9\"/><circle class=\"f\" cx=\"15\" cy=\"7\" r=\"2.3\"/><circle class=\"f\" cx=\"9\" cy=\"17\" r=\"2.3\"/>", "cloud": "<path class=\"f\" d=\"M7 18.5a4.5 4.5 0 01-.6-8.96A6 6 0 0118 10.5a4 4 0 01-.5 8z\"/>", "up2": "<path d=\"M7 17L17 7M9 7h8v8\"/>", "dn": "<path d=\"M5 12.5l4.5 4.5L19 7.5\"/>", "more": "<rect class=\"f\" x=\"3.5\" y=\"3.5\" width=\"7.5\" height=\"7.5\" rx=\"2.4\"/><rect x=\"13\" y=\"3.5\" width=\"7.5\" height=\"7.5\" rx=\"2.4\"/><rect x=\"3.5\" y=\"13\" width=\"7.5\" height=\"7.5\" rx=\"2.4\"/><circle class=\"f\" cx=\"16.75\" cy=\"16.75\" r=\"3.9\"/>", "dots": "<circle cx=\"5.5\" cy=\"12\" r=\"1.6\"/><circle cx=\"12\" cy=\"12\" r=\"1.6\"/><circle cx=\"18.5\" cy=\"12\" r=\"1.6\"/>", "chart": "<path d=\"M4 20V10M10 20V4M16 20v-7M21 20H3\"/>", "chat": "<path class=\"f\" d=\"M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v8a2.5 2.5 0 0 1-2.5 2.5H10l-4.5 3.5V17H6.5A2.5 2.5 0 0 1 4 14.5z\"/><path d=\"M8.5 9h7M8.5 12.5h4.5\"/>"};
 function IC(k,sz,w){return '<svg class="ico" viewBox="0 0 24 24" width="'+(sz||20)+'" height="'+(sz||20)+'" fill="none" stroke="currentColor" stroke-width="'+(w||1.7)+'" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+ICONS[k]+'</svg>'}
 function setProf(k,v){S.prof[k]=v;S.prof.u=Date.now();save()}
 var hapEl=null;
@@ -1975,6 +2001,7 @@ function renderDaySheet(){
   if(ui.sheet==='pro'){$('#dayOvBody').innerHTML=renderProSheet();return}
   if(ui.sheet==='more'){$('#dayOvBody').innerHTML=renderMoreSheet();return}
   if(ui.sheet==='tact'){$('#dayOvBody').innerHTML=renderTaskActs();return}
+  if(ui.sheet==='fb'){var fa=document.activeElement,fid=fa&&fa.id;$('#dayOvBody').innerHTML=renderFbSheet();if(fid&&$('#'+fid))$('#'+fid).focus();return}
   var d=parse(ui.sel),box=$('#dayOvBody'),h;
   if(ui.sheet==='note'){
     h='<div class="sh-head"><h2 class="h sm">Заметка · '+esc(dayShort(d))+'</h2><button type="button" class="btn ghost sm" data-close>Готово</button></div>'
@@ -2116,9 +2143,60 @@ function openHomeItem(id){
 function renderMoreSheet(){
   return '<div class="sh-head"><h2 class="h sm">Разделы</h2><button type="button" class="btn ghost sm" data-close>Закрыть</button></div>'
    +'<div class="more-grid">'+MORE_IDS.map(function(id){var m=homeMetric(id),mt=HOME_META[id];return '<button type="button" class="more-row" data-morego="'+id+'"'+(ui.screen===id?' aria-current="page"':'')+'>'+IC(mt.i,26,1.7)+'<b>'+mt.n+'</b><small>'+esc(m.v)+' · '+esc(m.s)+'</small></button>'}).join('')+'</div>'
-   +'<div class="more-line"><button type="button" class="btn ghost" data-moreact="pal">'+IC('palette',18,1.8)+' Оформление</button><button type="button" class="btn ghost" data-moreact="ac">'+IC('user',18,1.8)+' Профиль</button></div>';
+   +'<div class="more-line"><button type="button" class="btn ghost" data-moreact="pal">'+IC('palette',18,1.8)+' Оформление</button><button type="button" class="btn ghost" data-moreact="ac">'+IC('user',18,1.8)+' Профиль</button></div>'
+   +'<button type="button" class="btn block" data-fbopen>'+IC('chat',18,1.8)+' Замечания и предложения</button>'+legalRow();
 }
 function openMore(){ui.sheet='more';renderDaySheet();showOverlay('dayOv',null)}
+
+/* ---------- согласие, «первая версия», замечания и предложения, выгрузка данных ---------- */
+var PDC_V='2026-10-15',APP_VER='2026.10.15';
+function cfgGet(){return (typeof CFG==='object'&&CFG)||window.WEMED_CONFIG||{}}
+/* документы лежат на сайте; бот открывает их по полному адресу сайта */
+function legalUrl(p){var c=cfgGet();return (TRK.plat==='bot'?String(c.SITE_URL||'https://brngrdt.github.io/wemed_site/').replace(/\/?$/,'/'):'')+p}
+function pdcBox(id,on){return '<label class="pdc"><input type="checkbox" id="'+id+'"'+(on?' checked':'')+'><span>Я даю <a href="'+legalUrl('consent.html')+'" target="_blank" rel="noopener">согласие на обработку персональных данных</a> и принимаю <a href="'+legalUrl('privacy.html')+'" target="_blank" rel="noopener">политику обработки данных</a></span></label>'}
+function legalRow(){return '<p class="legal"><a href="'+legalUrl('privacy.html')+'" target="_blank" rel="noopener">Политика обработки данных</a> · <a href="'+legalUrl('consent.html')+'" target="_blank" rel="noopener">Согласие</a></p>'}
+function betaNote(){return '<div class="beta" role="note"><b>WeMed — первая версия</b><span>Мы постоянно улучшаем приложение и переносим его на российские сервисы: серверы в России, вход через Яндекс ID и VK ID. Ваши записи при переезде сохранятся. Нашли ошибку или есть идея — напишите нам.</span><button type="button" class="linkbtn" data-fbopen>Замечания и предложения →</button></div>'}
+
+function openFb(){if(openOv)closeOverlay();ui.fb=ui.fb||{kind:'idea',body:'',contact:'',busy:false,msg:'',mk:'',sent:false};ui.fb.sent=false;ui.fb.msg='';
+  /* контакт для ответа подставляем сами: почта аккаунта на сайте или ник в Telegram (можно стереть) */
+  try{if(!ui.fb.contact&&typeof user!=='undefined'&&user)ui.fb.contact=user.email||(user.username?'@'+user.username:'')}catch(e){}
+  ui.sheet='fb';renderDaySheet();showOverlay('dayOv','#fbText')}
+function renderFbSheet(){
+  var f=ui.fb,c=cfgGet(),cloud=!!(c.SUPABASE_URL&&c.SUPABASE_ANON_KEY),em=String(c.CONTACT_EMAIL||'').trim(),tg=String(c.CONTACT_TG||'').replace(/^@/,'').trim();
+  var direct=(em||tg)?'<p class="sub">Или напрямую: '+(em?'<a href="mailto:'+esc(em)+'">'+esc(em)+'</a>':'')+(em&&tg?' · ':'')+(tg?'<a href="https://t.me/'+esc(tg)+'" target="_blank" rel="noopener">Telegram @'+esc(tg)+'</a>':'')+'</p>':'';
+  var h='<div class="sh-head"><h2 class="h sm">Замечания и предложения</h2><button type="button" class="btn ghost sm" data-close>Закрыть</button></div>';
+  if(f.sent)return h+'<div class="fb-ok"><b>Спасибо, сообщение отправлено!</b><span>Мы читаем каждое. Если оставили контакт, ответим туда.</span></div><button type="button" class="btn block" data-fbnew>Написать ещё</button>'+direct;
+  h+='<p class="sub">Что сломалось, что неудобно, чего не хватает? Сообщение получит разработчик.</p>'
+   +'<div class="seg full" role="group" aria-label="Тип сообщения">'+[['bug','Ошибка'],['idea','Идея'],['question','Вопрос'],['other','Другое']].map(function(x){return '<button type="button" data-fbkind="'+x[0]+'" aria-pressed="'+(f.kind===x[0])+'">'+x[1]+'</button>'}).join('')+'</div>'
+   +'<textarea id="fbText" class="fb-text" maxlength="2000" rows="5" placeholder="'+(f.kind==='bug'?'Что произошло и на каком экране? Что ожидали увидеть?':'Ваше сообщение…')+'" aria-label="Сообщение">'+esc(f.body)+'</textarea>'
+   +'<input id="fbContact" type="text" maxlength="200" autocomplete="email" placeholder="Почта или Telegram для ответа" aria-label="Контакт для ответа" value="'+esc(f.contact)+'">'
+   +'<div class="acmsg '+(f.mk||'')+'" role="status">'+esc(f.msg||'')+'</div>';
+  if(cloud)h+='<button type="button" class="btn big block" id="fbSend"'+(f.busy?' disabled':'')+'>'+(f.busy?'Отправляем…':'Отправить')+'</button><p class="legal">Отправляя сообщение, вы соглашаетесь с <a href="'+legalUrl('privacy.html')+'" target="_blank" rel="noopener">политикой обработки данных</a>.</p>';
+  else if(!direct)h+='<p class="sub">В этой версии отправка не настроена.</p>';
+  return h+direct;
+}
+function authToken(){try{if(typeof SB!=='undefined'&&SB&&SB.auth)return SB.auth.getSession().then(function(r){return (r&&r.data&&r.data.session&&r.data.session.access_token)||''}).catch(function(){return ''})}catch(e){}return Promise.resolve('')}
+function fbSend(){
+  var f=ui.fb,c=cfgGet(),t=$('#fbText'),k=$('#fbContact');if(t)f.body=t.value;if(k)f.contact=k.value;
+  var body=String(f.body||'').trim();
+  if(body.length<3){f.msg='Напишите хотя бы пару слов.';f.mk='bad';renderDaySheet();return}
+  if(f.busy)return;f.busy=true;f.msg='';renderDaySheet();
+  authToken().then(function(tok){
+    return fetchTO(String(c.SUPABASE_URL).replace(/\/+$/,'')+'/functions/v1/feedback',{method:'POST',headers:{'Content-Type':'application/json','apikey':c.SUPABASE_ANON_KEY,'Authorization':'Bearer '+(tok||c.SUPABASE_ANON_KEY)},body:JSON.stringify({kind:f.kind,body:body.slice(0,2000),contact:String(f.contact||'').trim().slice(0,200),platform:TRK.plat,app_ver:APP_VER})});
+  }).then(function(r){
+    f.busy=false;
+    if(r.status===429){f.msg='Слишком много сообщений подряд. Попробуйте через 10 минут.';f.mk='bad'}
+    else if(!r.ok){f.msg='Не удалось отправить. Проверьте связь и попробуйте ещё раз.';f.mk='bad'}
+    else{f.sent=true;f.body='';f.msg='';trkAct('fb');buzz('ok')}
+    if(ui.sheet==='fb')renderDaySheet();
+  }).catch(function(){f.busy=false;f.msg='Нет связи с сервером. Текст сохранён — попробуйте ещё раз.';f.mk='bad';if(ui.sheet==='fb')renderDaySheet()});
+}
+/* выгрузка всех своих данных одним файлом (право на доступ к данным) */
+function exportData(){
+  var o={app:'WeMed',exported_at:new Date().toISOString(),data:payload()},txt=JSON.stringify(o,null,2),name='wemed-data-'+ymd(today())+'.json';
+  try{var a=document.createElement('a'),u=URL.createObjectURL(new Blob([txt],{type:'application/json'}));a.href=u;a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(u);a.remove()},1500);toast('Файл с данными сохранён')}
+  catch(e){try{navigator.clipboard.writeText(txt).then(function(){toast('Данные скопированы в буфер обмена')})}catch(e2){toast('Не удалось выгрузить данные')}}
+}
 function openHomeEdit(){ui.sheet='home';renderDaySheet();showOverlay('dayOv',null)}
 function renderHomeEdit(){
   var P=S.prof;
@@ -2162,7 +2240,8 @@ function renderOb(){
      +'<button type="button" class="btn big block" data-obnext>Далее</button>';
   }else{
     var tg=(typeof CS!=='undefined'&&CS);
-    h+='<h2 class="h" id="obTitle">Вход и уведомления</h2>'
+    h+='<h2 class="h" id="obTitle">Вход и уведомления</h2>'+betaNote().replace(/<button[^>]*data-fbopen[^>]*>.*?<\/button>/,'')
+     +(tg?pdcBox('obPdc',!!S.prof.pdc)+'<p class="sub">Галочка нужна, чтобы записи синхронизировались с аккаунтом WeMed. Без неё всё хранится только в Telegram и на устройстве.</p>':'')
      +'<p class="sub">'+(tg?'Данные сохраняются в вашем Telegram-аккаунте. Напоминания придут от бота: включите их в профиле, раздел «Напоминания».':'Войдите в аккаунт (значок профиля вверху), чтобы записи сохранялись в облаке и были на всех устройствах. Напоминания приходят уведомлениями сайта.')+'</p>'
      +'<p class="vpn">Все записи сохраняются прямо на устройстве. Если облако временно недоступно (плохая связь или нужен VPN), изменения отправятся сами, когда связь появится.</p>'
      +'<button type="button" class="btn big block" data-obnext>Начать</button>';
@@ -2172,7 +2251,7 @@ function renderOb(){
 function obNext(){
   var o=ui.ob;
   if(o.step===0){var n=$('#obName');if(n)o.name=n.value;var nm=String(o.name||'').replace(/\s+/g,' ').trim().slice(0,30);if(nm){setProf('name',nm);renderGreet()}}
-  if(o.step>=2){setProf('onb',1);closeOverlay();return}
+  if(o.step>=2){var opd=$('#obPdc');if(opd&&opd.checked&&!S.prof.pdc){S.prof.pdc=PDC_V;if(typeof syncNow==='function')setTimeout(syncNow,0)}setProf('onb',1);closeOverlay();return}
   o.step++;renderOb();var f=$('#obName')||$('#obBody .btn');if(f)f.focus();
 }
 
@@ -3743,7 +3822,32 @@ function otpSent(type){var a=ui.ac;a.step='otp';a.otpType=type;a.sentAt=Date.now
 function otpSend(type,email){
   if(type==='signup')return SB.auth.resend({type:'signup',email:email});
   if(type==='recovery')return SB.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});
-  return SB.auth.signInWithOtp({email:email,options:{shouldCreateUser:true,emailRedirectTo:location.origin+location.pathname}});
+  return SB.auth.signInWithOtp({email:email,options:{shouldCreateUser:true,emailRedirectTo:location.origin+location.pathname,data:{pdc_v:PDC_V}}});
+}
+/* согласие: галочку помним до входа (вход через Telegram уходит со страницы), после входа записываем в базу (таблица consents) */
+function pdcRemember(){try{localStorage.setItem('wemed.pdc',PDC_V)}catch(e){}}
+function pdcLocal(){try{return localStorage.getItem('wemed.pdc')===PDC_V}catch(e){return false}}
+function consentSync(force){
+  if(!SB||!user||typeof SB.rpc!=='function')return;
+  if(!force&&consentSync.uid===user.id)return;consentSync.uid=user.id;
+  var give=pdcLocal()?Promise.resolve(SB.rpc('give_consent',{p_version:PDC_V,p_source:'site'})).catch(function(){}):Promise.resolve();
+  give.then(function(){return SB.rpc('my_consent')}).then(function(r){
+    if(r&&!r.error){ui.pdcOk=(r.data===PDC_V);if(ui.pdcOk)pdcRemember()}
+    if(openOv==='acOv')renderAccount();
+  }).catch(function(){});
+}
+/* удаление аккаунта: двойное подтверждение, затем функция delete_me удаляет пользователя и все его данные */
+function acDelete(el){
+  if(el.dataset.arm!=='1'){el.dataset.arm='1';el.textContent='Нажмите ещё раз: удалить навсегда';acNote('Аккаунт и все записи в облаке будут удалены без возможности восстановления. Сначала можно скачать свои данные.','bad');setTimeout(function(){if(el.isConnected){el.dataset.arm='0';el.textContent='Удалить аккаунт'}},6000);return}
+  el.disabled=true;
+  Promise.resolve(SB.rpc('delete_me')).then(function(r){
+    if(r&&r.error)throw r.error;
+    return SB.auth.signOut().catch(function(){});
+  }).then(function(){
+    user=null;proClear();S=normalize({});sync={uid:null,rev:null,dirty:false,force:false};
+    try{localStorage.removeItem('wemed.sync');localStorage.removeItem('wemed.pdc')}catch(e){}
+    rawSave();applyPalette();setSync('out');closeOverlay();go('cal');toast('Аккаунт и данные удалены');
+  }).catch(function(e){el.disabled=false;acMsg('Не удалось удалить аккаунт: '+authErr(e)+' Напишите нам — удалим вручную.','bad')});
 }
 function otpResend(){
   var a=ui.ac;if(otpLeft()>0||a.busy)return;
@@ -3751,6 +3855,8 @@ function otpResend(){
   otpSend(a.otpType,a.email).then(function(r){a.busy=false;if(r&&r.error){acMsg(authErr(r.error),'bad');return}a.sentAt=Date.now();acMsg('Новый код отправлен.','ok')}).catch(function(e){a.busy=false;acMsg(authErr(e),'bad')});
 }
 function acMsg(t,k){ui.ac.msg=t||'';ui.ac.kind=k||'';renderAccount()}
+/* сообщение без перерисовки окна: не стирает введённый пароль и не сбрасывает «нажмите ещё раз» */
+function acNote(t,k){ui.ac.msg=t||'';ui.ac.kind=k||'';var m=$('#acBody .acmsg');if(m){m.textContent=ui.ac.msg;m.className='acmsg '+ui.ac.kind}else renderAccount()}
 function renderAccount(){
   var a=ui.ac,h='',b=$('#acBody');
   if(!SB){b.innerHTML='<p class="sub">Облако в этой версии не подключено, данные хранятся только на этом устройстве. Резервную копию можно сделать в разделе «Календарь» → «Данные и резервная копия».</p>';return}
@@ -3758,7 +3864,9 @@ function renderAccount(){
     h='<form class="acform" id="acForm" autocomplete="off"><p class="sub">Придумайте новый пароль.</p><div><label class="lab" for="acPass">Новый пароль</label><input id="acPass" type="password" autocomplete="new-password" minlength="6" placeholder="Не короче 6 символов"></div><div class="acmsg '+a.kind+'" role="status">'+esc(a.msg)+'</div><button type="submit" class="btn big block"'+(a.busy?' disabled':'')+'>Сохранить пароль</button></form>';
   }else if(user){
     var st={sync:'Синхронизация…',ok:'Всё сохранено в облаке'+(lastSync?' в '+pad(lastSync.getHours())+':'+pad(lastSync.getMinutes()):''),err:'Нет связи с облаком. Изменения сохранены на устройстве и отправятся позже.',out:''}[syncState]||'';
-    h='<div class="acstat"><span class="eyebrow">Вы вошли как</span><div style="font-weight:600;margin:4px 0 8px;overflow-wrap:anywhere">'+esc(acName())+'</div><span class="'+(syncState==='err'?'neg':syncState==='ok'?'pos':'')+'">'+esc(st)+'</span></div><div class="row" style="margin-top:12px"><button type="button" class="btn ghost" data-acsync>Синхронизировать сейчас</button><button type="button" class="btn danger" data-acout>Выйти</button></div>'+remBtn()+'<p class="sub" style="margin-top:12px">Данные хранятся в вашем аккаунте и подтягиваются на любом устройстве после входа. При выходе копия на этом устройстве очищается.</p><div class="acmsg '+a.kind+'" role="status">'+esc(a.msg)+'</div>';
+    h=(ui.pdcOk===false?'<div class="pdc-ask"><b>Подтвердите согласие</b><span>Мы обновили документы: нужно ваше согласие на обработку персональных данных, чтобы синхронизация продолжала работать.</span>'+pdcBox('acPdc2',false)+'<button type="button" class="btn sm" data-pdcok>Подтвердить</button></div>':'')
+     +'<div class="acstat"><span class="eyebrow">Вы вошли как</span><div style="font-weight:600;margin:4px 0 8px;overflow-wrap:anywhere">'+esc(acName())+'</div><span class="'+(syncState==='err'?'neg':syncState==='ok'?'pos':'')+'">'+esc(st)+'</span></div><div class="row" style="margin-top:12px"><button type="button" class="btn ghost" data-acsync>Синхронизировать сейчас</button><button type="button" class="btn danger" data-acout>Выйти</button></div>'+remBtn()+'<p class="sub" style="margin-top:12px">Данные хранятся в вашем аккаунте и подтягиваются на любом устройстве после входа. При выходе копия на этом устройстве очищается.</p><div class="acmsg '+a.kind+'" role="status">'+esc(a.msg)+'</div>'
+     +'<div class="acmore"><button type="button" class="btn ghost sm" data-fbopen>'+IC('chat',16,1.8)+' Замечания и предложения</button><button type="button" class="btn ghost sm" data-acexp>Скачать мои данные</button><button type="button" class="btn danger sm" data-acdel>Удалить аккаунт</button></div>'+legalRow();
   }else if(a.step==='otp'){
     /* шаг ввода кода из письма */
     var what={signup:'подтвердить почту',recovery:'сбросить пароль',email:'войти'}[a.otpType]||'войти';
@@ -3768,10 +3876,11 @@ function renderAccount(){
      +'<button type="button" class="linkbtn" data-acresend>Отправить код ещё раз</button><button type="button" class="linkbtn" data-acback>Изменить почту</button></form>';
   }else{
     var up=a.mode==='up',rs=a.mode==='reset',cd=a.mode==='code';
-    h='<div class="seg full" role="group" aria-label="Режим"><button type="button" data-acmode="in" aria-pressed="'+(a.mode==='in'||cd)+'">Вход</button><button type="button" data-acmode="up" aria-pressed="'+up+'">Регистрация</button></div>'
+    h=betaNote()+'<div class="seg full" role="group" aria-label="Режим"><button type="button" data-acmode="in" aria-pressed="'+(a.mode==='in'||cd)+'">Вход</button><button type="button" data-acmode="up" aria-pressed="'+up+'">Регистрация</button></div>'
      +'<form class="acform" id="acForm" style="margin-top:14px" autocomplete="on">'+(up?'<div><label class="lab" for="acName">Имя</label><input id="acName" type="text" maxlength="30" autocomplete="given-name" placeholder="Как к вам обращаться" value="'+esc(a.name||S.prof.name||'')+'"></div>':'')+'<div><label class="lab" for="acEmail">Почта</label><input id="acEmail" type="email" autocomplete="email" inputmode="email" placeholder="name@example.com" value="'+esc(a.email)+'"></div>'
      +((rs||cd)?'':'<div><label class="lab" for="acPass">Пароль</label><input id="acPass" type="password" autocomplete="'+(up?'new-password':'current-password')+'" placeholder="'+(up?'Не короче 6 символов':'Ваш пароль')+'"></div>')
      +(cd?'<p class="sub">Пришлём на почту код. Пароль не нужен, а если аккаунта ещё нет, он создастся.</p>':rs?'<p class="sub">Пришлём на почту код, после него придумаете новый пароль.</p>':'')
+     +(rs?'':pdcBox('acPdc',!!a.pdc))
      +'<div class="acmsg '+a.kind+'" role="status">'+esc(a.msg)+'</div><button type="submit" class="btn big block"'+(a.busy?' disabled':'')+'>'+(rs||cd?'Получить код':up?'Создать аккаунт':'Войти')+'</button>'
      +(a.mode==='in'?'<button type="button" class="linkbtn" data-acmode="code">Войти по коду из письма</button><button type="button" class="linkbtn" data-acmode="reset">Забыли пароль?</button>':(rs||cd)?'<button type="button" class="linkbtn" data-acmode="in">Войти с паролем</button>':'')+'</form>'
      +(CFG.TG_BOT&&a.mode!=='reset'?'<div class="acor"><span>или</span></div><div class="tgbox" id="tgBox"></div>':'')
@@ -3819,6 +3928,7 @@ function tgReturn(){
   if(!q.get('hash')||!q.get('id')||!q.get('auth_date'))return;
   var d={};q.forEach(function(v,k){d[k]=v});
   try{history.replaceState(null,'',location.pathname+location.hash)}catch(e){}
+  if(!pdcLocal()){ui.ac.mode='in';setTimeout(function(){openAccount();acMsg('Отметьте согласие на обработку персональных данных и нажмите кнопку Telegram ещё раз.','bad')},300);return}
   tgLogin(d);
 }
 function authSubmit(){
@@ -3827,7 +3937,7 @@ function authSubmit(){
   if(nmEl){a.name=nmEl.value.replace(/\s+/g,' ').trim().slice(0,30)}
   if(a.step==='otp'&&!user){
     var code=(($('#acCode')||{}).value||'').replace(/\D/g,'');a.code=code;
-    if(code.length<6){acMsg('Введите код из письма целиком.','bad');return}
+    if(code.length<6){acNote('Введите код из письма целиком.','bad');return}
     a.busy=true;acMsg('');
     SB.auth.verifyOtp({email:a.email,token:code,type:a.otpType}).then(function(r){
       a.busy=false;
@@ -3844,12 +3954,14 @@ function authSubmit(){
     a.busy=true;acMsg('');
     SB.auth.updateUser({password:pw}).then(function(r){a.busy=false;if(r.error){acMsg(authErr(r.error),'bad');return}a.mode='in';acMsg('Пароль изменён.','ok');syncNow()}).catch(function(e){a.busy=false;acMsg(authErr(e),'bad')});return;
   }
-  if(!a.email||a.email.indexOf('@')<1){acMsg('Введите адрес почты.','bad');return}
-  if((a.mode==='in'||a.mode==='up')&&(!pw||(a.mode==='up'&&pw.length<6))){acMsg(a.mode==='up'?'Пароль должен быть не короче 6 символов.':'Введите пароль.','bad');return}
+  if(!a.email||a.email.indexOf('@')<1){acNote('Введите адрес почты.','bad');return}
+  /* согласие на обработку данных — отдельной галочкой, без неё вход и регистрация не идут (ст. 9 152-ФЗ) */
+  if(a.mode!=='reset'){var pc=$('#acPdc');a.pdc=!!(pc&&pc.checked);if(!a.pdc){acNote('Отметьте согласие на обработку персональных данных — без него войти и зарегистрироваться нельзя.','bad');return}pdcRemember()}
+  if((a.mode==='in'||a.mode==='up')&&(!pw||(a.mode==='up'&&pw.length<6))){acNote(a.mode==='up'?'Пароль должен быть не короче 6 символов.':'Введите пароль.','bad');return}
   a.busy=true;acMsg('');
   var p;
   if(a.mode==='in')p=SB.auth.signInWithPassword({email:a.email,password:pw});
-  else if(a.mode==='up')p=SB.auth.signUp({email:a.email,password:pw,options:{emailRedirectTo:location.origin+location.pathname,data:{name:a.name||''}}});
+  else if(a.mode==='up')p=SB.auth.signUp({email:a.email,password:pw,options:{emailRedirectTo:location.origin+location.pathname,data:{name:a.name||'',pdc_v:PDC_V}}});
   else p=otpSend(a.mode==='reset'?'recovery':'email',a.email);
   p.then(function(r){
     a.busy=false;
@@ -4031,6 +4143,11 @@ document.addEventListener('click',function(e){
   if((el=t.closest('[data-dstep]'))){stepDay(+el.dataset.dstep);return}
   if((el=t.closest('[data-tmenu]'))){buzz();openTaskActs(el.dataset.tmenu);return}
   if(t.closest('[data-overall]')){ui.overAll=true;renderTasks();return}
+  if(t.closest('[data-fbopen]')){buzz();openFb();return}
+  if((el=t.closest('[data-fbkind]'))){var ft=$('#fbText'),fc=$('#fbContact');if(ft)ui.fb.body=ft.value;if(fc)ui.fb.contact=fc.value;ui.fb.kind=el.dataset.fbkind;renderDaySheet();return}
+  if(t.closest('#fbSend')){fbSend();return}
+  if(t.closest('[data-fbnew]')){ui.fb.sent=false;renderDaySheet();var nt2=$('#fbText');if(nt2)nt2.focus();return}
+  if(t.closest('[data-acexp]')){exportData();return}
   if((el=t.closest('[data-morego]'))){var mg=el.dataset.morego;closeOverlay();go(mg);return}
   if((el=t.closest('[data-moreact]'))){var ma=el.dataset.moreact;closeOverlay();if(ma==='pal')openPalette();else $('#acBtn').click();return}
   if((el=t.closest('[data-ttime]'))){openTaskTime(el.dataset.ttime);return}
@@ -4098,7 +4215,9 @@ document.addEventListener('click',function(e){
   if(t.closest('[data-hbsave]')){saveHabit();return}
   if(t.closest('[data-hbdel]')){deleteHabit(ui.hb.form.id);return}
   if(t.closest('#acBtn')||t.closest('[data-acopen]')){openAccount();return}
-  if((el=t.closest('[data-acmode]'))){ui.ac.mode=el.dataset.acmode;ui.ac.step='';ui.ac.msg='';ui.ac.kind='';var ee=$('#acEmail');if(ee)ui.ac.email=ee.value;renderAccount();return}
+  if((el=t.closest('[data-acdel]'))){acDelete(el);return}
+  if(t.closest('[data-pdcok]')){var p2=$('#acPdc2');if(!p2||!p2.checked){acNote('Отметьте галочку согласия.','bad');return}pdcRemember();consentSync(true);acMsg('Спасибо, согласие сохранено.','ok');return}
+  if((el=t.closest('[data-acmode]'))){var pk0=$('#acPdc');if(pk0)ui.ac.pdc=pk0.checked;ui.ac.mode=el.dataset.acmode;ui.ac.step='';ui.ac.msg='';ui.ac.kind='';var ee=$('#acEmail');if(ee)ui.ac.email=ee.value;renderAccount();return}
   if(t.closest('[data-acresend]')){otpResend();return}
   if(t.closest('[data-acback]')){ui.ac.step='';ui.ac.code='';ui.ac.msg='';renderAccount();var em2=$('#acEmail');if(em2)em2.focus();return}
   if(t.closest('[data-acsync]')){acMsg('');syncNow().then(function(){if(syncState==='err')acMsg('Не удалось связаться с облаком.','bad')});return}
@@ -4128,6 +4247,7 @@ document.addEventListener('click',function(e){
   if((el=t.closest('[data-fpre]'))){if(S.timer.running)return;S.timer.pre=+el.dataset.fpre;setMode('focus');save();renderFocus();return}
 });
 document.addEventListener('submit',function(e){if(e.target.id==='acForm'){e.preventDefault();authSubmit()}});
+document.addEventListener('change',function(e){if(e.target.id==='acPdc'){ui.ac.pdc=e.target.checked;if(e.target.checked)pdcRemember();else{try{localStorage.removeItem('wemed.pdc')}catch(x){}}}});
 document.addEventListener('keydown',function(e){
   if(e.key==='Escape'&&openOv&&openOv!=='obOv')closeOverlay();
   if(e.key==='Enter'&&e.target&&e.target.id==='evTitle'){e.preventDefault();addEventFromPanel()}
@@ -4139,6 +4259,8 @@ document.addEventListener('input',function(e){
   else if(id==='evTitle')ui.evTitle=e.target.value;
   else if(id==='profName'){S.prof.name=e.target.value.replace(/\s+/g,' ').slice(0,30);S.prof.u=Date.now();save();renderGreet()}
   else if(id==='obName'){ui.ob.name=e.target.value}
+  else if(id==='fbText'){if(ui.fb)ui.fb.body=e.target.value}
+  else if(id==='fbContact'){if(ui.fb)ui.fb.contact=e.target.value}
   else if(id==='hueIn'){S.prof.hue=+e.target.value;S.prof.u=Date.now();applyPalette();save()}
   else if(e.target.dataset&&e.target.dataset.evtname){var vid=e.target.dataset.evtname;S.evtypes.forEach(function(x){if(x.id===vid){x.name=e.target.value.slice(0,24)||x.name;x.u=Date.now()}});save()}
   else if(e.target.dataset&&e.target.dataset.evtpick){var pid=e.target.dataset.evtpick,hx=String(e.target.value).toLowerCase();if(/^#[0-9a-f]{6}$/.test(hx)){S.evtypes.forEach(function(x){if(x.id===pid){x.c=hx;x.u=Date.now()}});save();var lb=e.target.parentNode;lb.style.setProperty('--c',hx);lb.classList.add('on');$$('[data-evtcol^="'+pid+'|"]').forEach(function(b){b.setAttribute('aria-pressed','false')})}}
@@ -4321,7 +4443,7 @@ if(SB){
     try{if(user&&!S.prof.name){var _m=user.user_metadata||{},_n=_m.name||_m.tg_name;if(_n){S.prof.name=String(_n).slice(0,30);renderGreet()}}}catch(e){}
     if(user&&ui.welcomeToast){ui.welcomeToast=false;setTimeout(function(){toast('Почта подтверждена. Добро пожаловать в WeMed!')},400)}
     if(ev==='PASSWORD_RECOVERY'){ui.ac.mode='recover';ui.ac.msg='';setTimeout(openAccount,0)}
-    if(user)setTimeout(function(){syncNow();proLoad(true)},0);else proClear();
+    if(user)setTimeout(function(){syncNow();proLoad(true);consentSync()},0);else{proClear();ui.pdcOk=null}
     setSync(user?'sync':'out');refresh();
   });
   window.addEventListener('online',function(){syncNow()});
