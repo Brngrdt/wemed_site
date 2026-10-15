@@ -6,4 +6,4 @@ window.WEMED_CONFIG = {
 OWNER_NAME: "Фамилия Имя Отчество",
      CONTACT_EMAIL: "ваша почта для обращений",
      CONTACT_TG: "ваш ник в Telegram без @",
-     SITE_URL: };
+     SITE_URL: "https://brngrdt.github.io/wemed_site/"};
