@@ -828,6 +828,11 @@ body:not([data-screen=cal]) :is(.dictum,.demo-pill){display:none!important}
 .gtab button{display:inline-flex;align-items:center;justify-content:center;gap:6px}
 .gtab .cnt{font-style:normal;min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:var(--bad);color:var(--surface);font:800 12px/20px var(--f-body)}
 
+/* ---------- вход по коду из письма ---------- */
+input.otp{font:600 24px var(--f-display);letter-spacing:.35em;text-align:center;min-height:58px}
+input.otp::placeholder{letter-spacing:.35em}
+.acform .linkbtn:disabled{opacity:.5;cursor:default}
+
 /* ---------- легенда цветов календаря ---------- */
 .cal-leg{display:flex;flex-wrap:wrap;gap:4px 12px;padding:8px 4px 0;font-size:12px;line-height:1.3;color:var(--muted);font-weight:600}
 .cal-leg:empty{display:none}
@@ -1324,7 +1329,7 @@ html[data-fam=clean] :is(.card,.notice,.rail){border:1px solid color-mix(in srgb
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
 <script src="config.js"></script>
 <script>
 (function(){
@@ -1675,6 +1680,20 @@ function buzz(kind){
   }catch(e){}
   try{if(navigator.vibrate&&navigator.vibrate(ok?[16,50,16]:14))return true}catch(e){}
   return hapticIOS();
+}
+/* ---------- сеть: запросы к облаку не дольше NET_TO мс ----------
+   При «полуживой» сети (VPN включается и выключается) запрос иначе может висеть минутами,
+   и синхронизация застревает в «Синхронизация…». Передаётся в createClient (global.fetch) и в вызовы функций. */
+var NET_TO=15000;
+function fetchTO(url,opts){
+  opts=opts||{};
+  if(typeof AbortController==='undefined')return fetch(url,opts);
+  var c=new AbortController(),o={},k,own=opts.signal;
+  for(k in opts)o[k]=opts[k];
+  o.signal=c.signal;
+  if(own){if(own.aborted)c.abort();else own.addEventListener('abort',function(){c.abort()})}
+  var t=setTimeout(function(){c.abort()},NET_TO||15000);
+  return fetch(url,o).then(function(r){clearTimeout(t);return r},function(e){clearTimeout(t);throw (c.signal.aborted&&!(own&&own.aborted))?new Error('Нет ответа от сервера (timeout)'):e});
 }
 /* ---------- анимации: режим и эффекты ---------- */
 function motion(){
@@ -2700,7 +2719,7 @@ function remFn(body){
   return c.auth.getSession().then(function(s){
     var tok=s&&s.data&&s.data.session&&s.data.session.access_token;
     if(!tok)throw new Error('nosession');
-    return fetch(CF.SUPABASE_URL.replace(/\/+$/,'')+'/functions/v1/send-reminders',{method:'POST',headers:{'Content-Type':'application/json','apikey':CF.SUPABASE_ANON_KEY,'Authorization':'Bearer '+tok},body:JSON.stringify(body)})
+    return fetchTO(CF.SUPABASE_URL.replace(/\/+$/,'')+'/functions/v1/send-reminders',{method:'POST',headers:{'Content-Type':'application/json','apikey':CF.SUPABASE_ANON_KEY,'Authorization':'Bearer '+tok},body:JSON.stringify(body)})
       .then(function(r){return r.json().catch(function(){return {}})});
   });
 }
@@ -3678,15 +3697,39 @@ function updateAccountUI(){
   if(openOv==='acOv')renderAccount();
 }
 function authErr(e){
-  var m=String(e&&e.message||e||'');
+  var m=String(e&&e.message||e||''),s;
   if(/Invalid login/i.test(m))return 'Неверная почта или пароль.';
   if(/already registered|already been registered/i.test(m))return 'Эта почта уже зарегистрирована. Войдите.';
-  if(/at least/i.test(m))return 'Пароль должен быть не короче 6 символов.';
-  if(/not confirmed/i.test(m))return 'Подтвердите почту по ссылке из письма и войдите снова.';
+  if(/at least|weak.?password/i.test(m))return 'Пароль должен быть не короче 6 символов.';
+  if(/not confirmed/i.test(m))return 'Почта ещё не подтверждена. Введите код из письма.';
+  if(/expired|invalid.*(otp|token|code)|otp_|token.*(invalid|not found)/i.test(m))return 'Код неверный или устарел. Запросите новый.';
+  if((s=/after (\d+) seconds?/i.exec(m)))return 'Повторно можно через '+s[1]+' с.';
   if(/rate limit|too many|seconds/i.test(m))return 'Слишком много попыток. Подождите минуту.';
-  if(/fetch|network/i.test(m))return 'Нет связи с сервером. Проверьте интернет.';
+  if(/signups? not allowed|signup.*disabled/i.test(m))return 'Новых пользователей по коду не регистрируем. Зарегистрируйтесь с паролем.';
+  if(/timeout|abort/i.test(m))return 'Сервер не отвечает. Проверьте интернет или включите VPN и повторите.';
+  if(/fetch|network|load failed/i.test(m))return 'Нет связи с сервером. Проверьте интернет.';
   if(/valid email|invalid.*email/i.test(m))return 'Проверьте адрес почты.';
-  return 'Не получилось: '+m;
+  try{console.warn('auth:',m)}catch(x){}
+  return 'Не получилось. Попробуйте ещё раз.';
+}
+/* вход и подтверждение по коду из письма (а не по ссылке: ссылка на iPhone открывается в Safari, а не в приложении) */
+var OTP_WAIT=60;
+function otpLeft(){var a=ui.ac;return a.sentAt?Math.max(0,OTP_WAIT-Math.floor((Date.now()-a.sentAt)/1000)):0}
+function otpTick(){
+  clearTimeout(otpTick.t);var bt=$('[data-acresend]');if(!bt)return;
+  var l=otpLeft();bt.disabled=l>0;bt.textContent=l>0?'Отправить код ещё раз через '+l+' с':'Отправить код ещё раз';
+  if(l>0)otpTick.t=setTimeout(otpTick,1000);
+}
+function otpSent(type){var a=ui.ac;a.step='otp';a.otpType=type;a.sentAt=Date.now();a.code=''}
+function otpSend(type,email){
+  if(type==='signup')return SB.auth.resend({type:'signup',email:email});
+  if(type==='recovery')return SB.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});
+  return SB.auth.signInWithOtp({email:email,options:{shouldCreateUser:true,emailRedirectTo:location.origin+location.pathname}});
+}
+function otpResend(){
+  var a=ui.ac;if(otpLeft()>0||a.busy)return;
+  a.busy=true;acMsg('');
+  otpSend(a.otpType,a.email).then(function(r){a.busy=false;if(r&&r.error){acMsg(authErr(r.error),'bad');return}a.sentAt=Date.now();acMsg('Новый код отправлен.','ok')}).catch(function(e){a.busy=false;acMsg(authErr(e),'bad')});
 }
 function acMsg(t,k){ui.ac.msg=t||'';ui.ac.kind=k||'';renderAccount()}
 function renderAccount(){
@@ -3697,18 +3740,26 @@ function renderAccount(){
   }else if(user){
     var st={sync:'Синхронизация…',ok:'Всё сохранено в облаке'+(lastSync?' в '+pad(lastSync.getHours())+':'+pad(lastSync.getMinutes()):''),err:'Нет связи с облаком. Изменения сохранены на устройстве и отправятся позже.',out:''}[syncState]||'';
     h='<div class="acstat"><span class="eyebrow">Вы вошли как</span><div style="font-weight:600;margin:4px 0 8px;overflow-wrap:anywhere">'+esc(acName())+'</div><span class="'+(syncState==='err'?'neg':syncState==='ok'?'pos':'')+'">'+esc(st)+'</span></div><div class="row" style="margin-top:12px"><button type="button" class="btn ghost" data-acsync>Синхронизировать сейчас</button><button type="button" class="btn danger" data-acout>Выйти</button></div>'+remBtn()+'<p class="sub" style="margin-top:12px">Данные хранятся в вашем аккаунте и подтягиваются на любом устройстве после входа. При выходе копия на этом устройстве очищается.</p><div class="acmsg '+a.kind+'" role="status">'+esc(a.msg)+'</div>';
+  }else if(a.step==='otp'){
+    /* шаг ввода кода из письма */
+    var what={signup:'подтвердить почту',recovery:'сбросить пароль',email:'войти'}[a.otpType]||'войти';
+    h='<form class="acform" id="acForm" autocomplete="off"><p class="sub">Мы отправили код на <b>'+esc(a.email)+'</b>. Введите его, чтобы '+what+'. Письмо может прийти через минуту, проверьте и «Спам».</p>'
+     +'<div><label class="lab" for="acCode">Код из письма</label><input id="acCode" class="otp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="000000" value="'+esc(a.code||'')+'"></div>'
+     +'<div class="acmsg '+a.kind+'" role="status">'+esc(a.msg)+'</div><button type="submit" class="btn big block"'+(a.busy?' disabled':'')+'>Подтвердить</button>'
+     +'<button type="button" class="linkbtn" data-acresend>Отправить код ещё раз</button><button type="button" class="linkbtn" data-acback>Изменить почту</button></form>';
   }else{
-    var up=a.mode==='up',rs=a.mode==='reset';
-    h='<div class="seg full" role="group" aria-label="Режим"><button type="button" data-acmode="in" aria-pressed="'+(a.mode==='in')+'">Вход</button><button type="button" data-acmode="up" aria-pressed="'+up+'">Регистрация</button></div>'
+    var up=a.mode==='up',rs=a.mode==='reset',cd=a.mode==='code';
+    h='<div class="seg full" role="group" aria-label="Режим"><button type="button" data-acmode="in" aria-pressed="'+(a.mode==='in'||cd)+'">Вход</button><button type="button" data-acmode="up" aria-pressed="'+up+'">Регистрация</button></div>'
      +'<form class="acform" id="acForm" style="margin-top:14px" autocomplete="on">'+(up?'<div><label class="lab" for="acName">Имя</label><input id="acName" type="text" maxlength="30" autocomplete="given-name" placeholder="Как к вам обращаться" value="'+esc(a.name||S.prof.name||'')+'"></div>':'')+'<div><label class="lab" for="acEmail">Почта</label><input id="acEmail" type="email" autocomplete="email" inputmode="email" placeholder="name@example.com" value="'+esc(a.email)+'"></div>'
-     +(rs?'':'<div><label class="lab" for="acPass">Пароль</label><input id="acPass" type="password" autocomplete="'+(up?'new-password':'current-password')+'" placeholder="'+(up?'Не короче 6 символов':'Ваш пароль')+'"></div>')
-     +'<div class="acmsg '+a.kind+'" role="status">'+esc(a.msg)+'</div><button type="submit" class="btn big block"'+(a.busy?' disabled':'')+'>'+(rs?'Отправить ссылку для сброса':up?'Создать аккаунт':'Войти')+'</button>'
-     +(a.mode==='in'?'<button type="button" class="linkbtn" data-acmode="reset">Забыли пароль?</button>':rs?'<button type="button" class="linkbtn" data-acmode="in">Назад ко входу</button>':'')+'</form>'
+     +((rs||cd)?'':'<div><label class="lab" for="acPass">Пароль</label><input id="acPass" type="password" autocomplete="'+(up?'new-password':'current-password')+'" placeholder="'+(up?'Не короче 6 символов':'Ваш пароль')+'"></div>')
+     +(cd?'<p class="sub">Пришлём на почту код. Пароль не нужен, а если аккаунта ещё нет, он создастся.</p>':rs?'<p class="sub">Пришлём на почту код, после него придумаете новый пароль.</p>':'')
+     +'<div class="acmsg '+a.kind+'" role="status">'+esc(a.msg)+'</div><button type="submit" class="btn big block"'+(a.busy?' disabled':'')+'>'+(rs||cd?'Получить код':up?'Создать аккаунт':'Войти')+'</button>'
+     +(a.mode==='in'?'<button type="button" class="linkbtn" data-acmode="code">Войти по коду из письма</button><button type="button" class="linkbtn" data-acmode="reset">Забыли пароль?</button>':(rs||cd)?'<button type="button" class="linkbtn" data-acmode="in">Войти с паролем</button>':'')+'</form>'
      +(CFG.TG_BOT&&a.mode!=='reset'?'<div class="acor"><span>или</span></div><div class="tgbox" id="tgBox"></div>':'')
      +'<p class="sub" style="margin-top:12px">Записи с этого устройства перенесутся в аккаунт, и всё будет синхронизироваться между устройствами.</p>';
   }
   b.innerHTML=h;
-  tgMount();
+  tgMount();otpTick();
 }
 function acName(){
   var m=user&&user.user_metadata;
@@ -3734,7 +3785,7 @@ function tgErr(e){
 }
 function tgLogin(d){
   toast('Входим через Telegram…');
-  fetch(CFG.SUPABASE_URL.replace(/\/+$/,'')+'/functions/v1/telegram-auth',{method:'POST',headers:{'Content-Type':'application/json','apikey':CFG.SUPABASE_ANON_KEY},body:JSON.stringify(d)})
+  fetchTO(CFG.SUPABASE_URL.replace(/\/+$/,'')+'/functions/v1/telegram-auth',{method:'POST',headers:{'Content-Type':'application/json','apikey':CFG.SUPABASE_ANON_KEY},body:JSON.stringify(d)})
     .then(function(r){return r.json().catch(function(){return {}}).then(function(j){return {ok:r.ok,j:j}})})
     .then(function(x){
       if(!x.ok||!x.j.token_hash)throw new Error(x.j&&x.j.error||'ошибка сервера');
@@ -3755,24 +3806,42 @@ function authSubmit(){
   var a=ui.ac,em=($('#acEmail')||{}).value,pw=($('#acPass')||{}).value,nmEl=$('#acName');
   if(em!==undefined)a.email=em.trim();
   if(nmEl){a.name=nmEl.value.replace(/\s+/g,' ').trim().slice(0,30)}
+  if(a.step==='otp'&&!user){
+    var code=(($('#acCode')||{}).value||'').replace(/\D/g,'');a.code=code;
+    if(code.length<6){acMsg('Введите код из письма целиком.','bad');return}
+    a.busy=true;acMsg('');
+    SB.auth.verifyOtp({email:a.email,token:code,type:a.otpType}).then(function(r){
+      a.busy=false;
+      if(r.error){acMsg(authErr(r.error),'bad');return}
+      var wasType=a.otpType;a.step='';a.code='';a.sentAt=0;
+      if(wasType==='recovery'){a.mode='recover';acMsg('Код подтверждён. Придумайте новый пароль.','ok');return}
+      if(wasType==='signup')ui.welcomeToast=false;
+      closeOverlay();toast(wasType==='signup'?'Почта подтверждена. Добро пожаловать в WeMed!':'Вы вошли в аккаунт');
+    }).catch(function(e){a.busy=false;acMsg(authErr(e),'bad')});
+    return;
+  }
   if(a.mode==='recover'){
     if(!pw||pw.length<6){acMsg('Пароль должен быть не короче 6 символов.','bad');return}
     a.busy=true;acMsg('');
     SB.auth.updateUser({password:pw}).then(function(r){a.busy=false;if(r.error){acMsg(authErr(r.error),'bad');return}a.mode='in';acMsg('Пароль изменён.','ok');syncNow()}).catch(function(e){a.busy=false;acMsg(authErr(e),'bad')});return;
   }
   if(!a.email||a.email.indexOf('@')<1){acMsg('Введите адрес почты.','bad');return}
-  if(a.mode!=='reset'&&(!pw||(a.mode==='up'&&pw.length<6))){acMsg(a.mode==='up'?'Пароль должен быть не короче 6 символов.':'Введите пароль.','bad');return}
-  if(a.mode==='up'&&a.name){setProf('name',a.name);renderGreet()}
+  if((a.mode==='in'||a.mode==='up')&&(!pw||(a.mode==='up'&&pw.length<6))){acMsg(a.mode==='up'?'Пароль должен быть не короче 6 символов.':'Введите пароль.','bad');return}
   a.busy=true;acMsg('');
   var p;
   if(a.mode==='in')p=SB.auth.signInWithPassword({email:a.email,password:pw});
   else if(a.mode==='up')p=SB.auth.signUp({email:a.email,password:pw,options:{emailRedirectTo:location.origin+location.pathname,data:{name:a.name||''}}});
-  else p=SB.auth.resetPasswordForEmail(a.email,{redirectTo:location.origin+location.pathname});
+  else p=otpSend(a.mode==='reset'?'recovery':'email',a.email);
   p.then(function(r){
     a.busy=false;
-    if(r.error){acMsg(authErr(r.error),'bad');return}
-    if(a.mode==='reset'){acMsg('Если такая почта есть, мы отправили на неё ссылку для сброса пароля.','ok');return}
-    if(a.mode==='up'&&!(r.data&&r.data.session)){acMsg('Мы отправили письмо со ссылкой. Подтвердите почту и затем войдите.','ok');a.mode='in';renderAccount();return}
+    if(r.error){
+      /* вошёл с паролем, но почта не подтверждена — сразу шлём код подтверждения */
+      if(a.mode==='in'&&/not confirmed/i.test(String(r.error.message||''))){otpSend('signup',a.email);otpSent('signup');acMsg('Почта ещё не подтверждена. Мы отправили код.','ok');return}
+      acMsg(authErr(r.error),'bad');return}
+    if(a.mode==='up'&&a.name){setProf('name',a.name);renderGreet()}
+    if(a.mode==='reset'){otpSent('recovery');acMsg('');return}
+    if(a.mode==='code'){otpSent('email');acMsg('');return}
+    if(a.mode==='up'&&!(r.data&&r.data.session)){otpSent('signup');acMsg('');return}
     closeOverlay();toast('Вы вошли в аккаунт');
   }).catch(function(e){a.busy=false;acMsg(authErr(e),'bad')});
 }
@@ -4009,7 +4078,9 @@ document.addEventListener('click',function(e){
   if(t.closest('[data-hbsave]')){saveHabit();return}
   if(t.closest('[data-hbdel]')){deleteHabit(ui.hb.form.id);return}
   if(t.closest('#acBtn')||t.closest('[data-acopen]')){openAccount();return}
-  if((el=t.closest('[data-acmode]'))){ui.ac.mode=el.dataset.acmode;ui.ac.msg='';ui.ac.kind='';var ee=$('#acEmail');if(ee)ui.ac.email=ee.value;renderAccount();return}
+  if((el=t.closest('[data-acmode]'))){ui.ac.mode=el.dataset.acmode;ui.ac.step='';ui.ac.msg='';ui.ac.kind='';var ee=$('#acEmail');if(ee)ui.ac.email=ee.value;renderAccount();return}
+  if(t.closest('[data-acresend]')){otpResend();return}
+  if(t.closest('[data-acback]')){ui.ac.step='';ui.ac.code='';ui.ac.msg='';renderAccount();var em2=$('#acEmail');if(em2)em2.focus();return}
   if(t.closest('[data-acsync]')){acMsg('');syncNow().then(function(){if(syncState==='err')acMsg('Не удалось связаться с облаком.','bad')});return}
   if((el=t.closest('[data-acout]'))){
     if(el.dataset.arm!=='1'){el.dataset.arm='1';el.textContent='Нажмите ещё раз, чтобы выйти';setTimeout(function(){if(el.isConnected){el.dataset.arm='0';el.textContent='Выйти'}},5000);return}
@@ -4221,10 +4292,12 @@ window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();def
 $('#installBtn').addEventListener('click',function(){if(deferredInstall){deferredInstall.prompt();deferredInstall=null;$('#installBtn').hidden=true}});
 window.addEventListener('appinstalled',function(){$('#installBtn').hidden=true});
 var _hs=location.hash||'';
-try{if(CFG.SUPABASE_URL&&CFG.SUPABASE_ANON_KEY&&window.supabase)SB=window.supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}})}catch(e){SB=null}
+try{if(CFG.SUPABASE_URL&&CFG.SUPABASE_ANON_KEY&&window.supabase)SB=window.supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true},global:{fetch:fetchTO}})}catch(e){SB=null}
 if(SB){
   SB.auth.onAuthStateChange(function(ev,session){
     user=session?session.user:null;
+    /* плановое обновление токена: данные и экран не меняются, перерисовка сбивала бы ввод */
+    if(ev==='TOKEN_REFRESHED')return;
     try{if(user&&!S.prof.name){var _m=user.user_metadata||{},_n=_m.name||_m.tg_name;if(_n){S.prof.name=String(_n).slice(0,30);renderGreet()}}}catch(e){}
     if(user&&ui.welcomeToast){ui.welcomeToast=false;setTimeout(function(){toast('Почта подтверждена. Добро пожаловать в WeMed!')},400)}
     if(ev==='PASSWORD_RECOVERY'){ui.ac.mode='recover';ui.ac.msg='';setTimeout(openAccount,0)}

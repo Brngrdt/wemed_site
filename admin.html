@@ -137,6 +137,13 @@ a{color:var(--g);font-weight:700}
       <div class="card"><h2>Самые активные</h2><div class="hint">по числу дней с заходом (из списка ниже)</div><div id="top"></div></div>
     </div>
 
+    <div id="money" hidden>
+      <div class="sec">Подписки и деньги</div>
+      <div class="grid k" id="mkpi"></div>
+      <div class="grid two"><div class="card"><h2>Выручка по дням</h2><div class="hint">успешные платежи за 30 дней, ₽</div><div id="mc"></div></div>
+        <div class="card"><h2>Воронка подписки</h2><div class="hint">от пробного периода к оплате</div><div class="fn" id="mfun"></div></div></div>
+    </div>
+
     <div class="sec">Платформы и аудитория</div>
     <div class="grid two">
       <div class="card"><h2>Где пользуются</h2><div class="hint">активные за 30 дней</div><div id="plat"></div></div>
@@ -159,7 +166,7 @@ a{color:var(--g);font-weight:700}
 </div>
 
 <script src="config.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
 <script>
 (function(){
 var CFG=window.WEMED_CONFIG||{},$=function(s){return document.querySelector(s)};
@@ -221,6 +228,18 @@ function render(d){
   if(CFG.GC){$('#gcCard').hidden=false;$('#gcLink').href='https://'+CFG.GC+'.goatcounter.com'}
 }
 
+function rub(n){return num(Math.round(+n||0))+' ₽'}
+function renderMoney(m){
+  if(!m||Array.isArray(m)||m.pay_count==null){$('#money').hidden=true;return}
+  $('#money').hidden=false;
+  var K=[['Платят сейчас',m.paid_now,'автопродление у '+num(m.auto_on)],['На пробном периоде',m.trial_now,'пробный брали всего '+num(m.trial_ever)],['Выручка за 30 дней',rub(m.rev30),'платежей всего '+num(m.pay_count)],['Выручка всего',rub(m.rev_all),'']];
+  $('#mkpi').innerHTML=K.map(function(k){return '<div class="card kpi"><div class="l">'+k[0]+'</div><div class="v">'+(typeof k[1]==='number'?num(k[1]):esc(k[1]))+'</div><div class="d">'+esc(k[2])+'</div></div>'}).join('');
+  var days=[],i;for(i=29;i>=0;i--)days.push(addDays(window.__today||new Date().toISOString().slice(0,10),-i));
+  var bd={};(m.by_day||[]).forEach(function(x){bd[x.d]=+x.sum});
+  bars('#mc',days,[function(k){return bd[k]}],['var(--gold)']);
+  var t=m.trial_ever||0,fs=[['Взяли пробный',t],['Сейчас на пробном',m.trial_now],['Оплатили после пробного',m.trial_to_paid]];
+  $('#mfun').innerHTML=fs.map(function(s){var v=s[1]||0,p=pc(v,t);return '<div class="st"><span class="n">'+s[0]+'</span><span class="bar"><b style="width:'+(v?Math.max(3,p):0)+'%"></b></span><span class="c">'+num(v)+' · '+p+'%</span></div>'}).join('');
+}
 function pc(a,b){return b?Math.round(a/b*100):0}
 function heat(p){return 'background:color-mix(in srgb,var(--g) '+Math.round(8+p*0.8)+'%,transparent);color:'+(p>55?'#fff':'var(--ink)')}
 function col(id,items,fmt){
@@ -283,7 +302,7 @@ function load(){
   $('#dmsg').textContent='Загружаем…';$('#dmsg').className='msg';
   return SB.rpc('admin_stats').then(function(r){
     if(r.error)throw r.error;
-    $('#dmsg').textContent='';show('dash');render(r.data);loadUsers();
+    $('#dmsg').textContent='';show('dash');window.__today=r.data.today;render(r.data);loadUsers();Promise.resolve(SB.rpc('admin_money')).then(function(x){renderMoney(x&&!x.error?x.data:null)}).catch(function(){renderMoney(null)});
   }).catch(function(e){
     var m=String(e&&e.message||e);
     show('dash');

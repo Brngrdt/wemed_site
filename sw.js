@@ -1,6 +1,8 @@
-// Сервис-воркер WeMed: сначала сеть (чтобы обновления доходили сразу), без сети берётся копия из кэша.
-var CACHE = 'wemed-v22';
-var SHELL = ['./', 'index.html', 'config.js', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png'];
+// Сервис-воркер WeMed: сначала сеть (чтобы обновления доходили сразу), но не дольше NET_WAIT мс:
+// если сеть медленная (плохая связь, VPN), сразу отдаём копию из кэша, а свежая версия докачивается в фоне.
+var CACHE = 'wemed-v23';
+var NET_WAIT = 3500;
+var SHELL = ['./', 'index.html', 'config.js', 'supabase.js', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png'];
 self.addEventListener('install', function (e) {
   e.waitUntil(caches.open(CACHE).then(function (c) { return c.addAll(SHELL); }).then(function () { return self.skipWaiting(); }));
 });
@@ -14,16 +16,25 @@ self.addEventListener('fetch', function (e) {
   if (req.method !== 'GET') return;
   var url = new URL(req.url);
   var sameOrigin = url.origin === self.location.origin;
-  var cdn = url.hostname === 'cdn.jsdelivr.net' || url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com';
-  if (!sameOrigin && !cdn) return; // запросы к облаку (Supabase) не трогаем
-  e.respondWith(
-    fetch(req).then(function (res) {
-      if (res && (res.ok || res.type === 'opaque')) { var copy = res.clone(); caches.open(CACHE).then(function (c) { c.put(req, copy); }); }
-      return res;
-    }).catch(function () {
-      return caches.match(req).then(function (hit) { return hit || (req.mode === 'navigate' ? caches.match('index.html') : Response.error()); });
-    })
-  );
+  if (!sameOrigin) return; // запросы к облаку (Supabase, Telegram) не трогаем
+  var net = fetch(req).then(function (res) {
+    if (res && res.ok) { var copy = res.clone(); caches.open(CACHE).then(function (c) { c.put(req, copy); }); }
+    return res;
+  });
+  var fromCache = function () {
+    return caches.match(req, { ignoreSearch: req.mode === 'navigate' }).then(function (hit) { return hit || (req.mode === 'navigate' ? caches.match('index.html') : null); });
+  };
+  e.respondWith(new Promise(function (resolve) {
+    var done = false;
+    var finish = function (r) { if (!done && r) { done = true; resolve(r); } };
+    // сеть не успела — пробуем кэш; если в кэше нет, продолжаем ждать сеть
+    var t = setTimeout(function () { fromCache().then(finish); }, NET_WAIT);
+    net.then(function (res) { clearTimeout(t); finish(res); }).catch(function () {
+      clearTimeout(t);
+      fromCache().then(function (hit) { if (hit) finish(hit); else if (!done) { done = true; resolve(Response.error()); } });
+    });
+  }));
+  e.waitUntil(net.catch(function () {}));
 });
 
 // Пуш-уведомления (приходят с сервера напоминаний)
