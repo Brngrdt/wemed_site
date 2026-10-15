@@ -1,6 +1,6 @@
 // Сервис-воркер WeMed: сначала сеть (чтобы обновления доходили сразу), но не дольше NET_WAIT мс:
 // если сеть медленная (плохая связь, VPN), сразу отдаём копию из кэша, а свежая версия докачивается в фоне.
-var CACHE = 'wemed-v26';
+var CACHE = 'wemed-v27';
 var NET_WAIT = 3500;
 var SHELL = ['./', 'index.html', 'config.js', 'supabase.js', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png'];
 self.addEventListener('install', function (e) {
