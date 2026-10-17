@@ -12,7 +12,8 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<meta name="description" content="WeMed — планнер для студентов-медиков: календарь, расписание пар, задачи, привычки, оценки, финансы.">
+<meta name="description" content="WeMed — планнер для студентов-медиков: календарь, расписание пар, задачи, привычки, оценки, финансы. Создатель — Kirill Berngardt.">
+<meta name="author" content="Kirill Berngardt">
 <title>WeMed</title>
 <style>
 /* WeMed · общий слой оформления. Темы заданы токенами; карточки сделаны «двойной рамкой» (оболочка + сердцевина). */
@@ -841,6 +842,17 @@ body:not([data-screen=cal]) :is(.dictum,.demo-pill){display:none!important}
 .pdc input{flex:none;width:22px;height:22px;min-height:0;margin:1px 0 0;accent-color:var(--accent);cursor:pointer}
 .pdc a,.legal a,.sub a{color:var(--lt);font-weight:600}
 .legal{font-size:12.5px;color:var(--muted);margin:10px 0 0}
+/* подпись создателя */
+.beta .by{font-size:12.5px;color:var(--muted);font-style:italic}
+.author{display:flex;flex-direction:column;align-items:center;text-align:center;gap:0;margin:18px 0 4px;padding-top:14px;border-top:1px dashed color-mix(in srgb,var(--fg) 16%,transparent)}
+.author .au-k{font-size:12.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.author .au-n{font:italic 600 26px/1.3 Georgia,"Times New Roman","Noto Serif","Droid Serif",serif;letter-spacing:.01em;color:var(--accent);margin-top:4px}
+.author .au-s{width:150px;height:14px;margin:-4px 0 2px;overflow:visible}
+.author .au-s path{fill:none;stroke:var(--accent);stroke-width:1.6;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:0;opacity:.75}
+html:not([data-mo=calm]) .sheet .author .au-s path{animation:auSign 1.4s .35s ease-out both}
+@keyframes auSign{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
+@media (prefers-reduced-motion:reduce){.sheet .author .au-s path{animation:none}}
+.author .au-v{font-size:12.5px;color:var(--muted)}
 .pdc-ask{display:flex;flex-direction:column;gap:8px;padding:12px 14px;border-radius:18px;background:var(--well);box-shadow:inset 0 0 0 1.5px var(--warn);margin-bottom:12px}
 .pdc-ask b{font-weight:700}
 .pdc-ask span{font-size:13.5px;color:var(--muted)}
@@ -957,6 +969,71 @@ html[data-mo=max] .btn:active,html[data-mo=max] .chip:active{transform:scale(.93
 /* смена темы кругом */
 ::view-transition-old(root),::view-transition-new(root){animation:none;mix-blend-mode:normal}
 @media (prefers-reduced-motion:reduce){.chk.pop,.hc.pop,.day.pick,.dock.hot .rg .ico{animation:none}}
+
+/* ===== посадочная страница (сайт, первый визит): цвета из текущей темы ===== */
+.landing{position:fixed;inset:0;z-index:90;overflow-y:auto;overscroll-behavior:contain;background:var(--bg);color:var(--fg);-webkit-overflow-scrolling:touch;animation:ldIn .35s ease both}
+.landing[hidden]{display:none}
+.landing.out{animation:ldOut .26s ease both}
+@keyframes ldIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes ldOut{to{opacity:0;transform:translateY(-10px)}}
+html.landing-on,html.landing-on body{overflow:hidden}
+.landing::before{content:"";position:fixed;inset:0;pointer-events:none;background:radial-gradient(60% 40% at 90% 10%,var(--glow),transparent 70%),radial-gradient(60% 40% at 0% 70%,var(--accent-soft),transparent 70%)}
+.ld-in{position:relative;max-width:1060px;margin:0 auto;padding:max(14px,env(safe-area-inset-top)) 20px 120px}
+.ld-top{display:flex;align-items:center;justify-content:space-between;padding:8px 0 4px}
+.ld-brand{display:flex;align-items:center;gap:10px;font:700 21px var(--f-display);letter-spacing:-.01em}
+.ld-brand img{width:36px;height:36px;border-radius:10px}
+.ld-link{background:none;border:0;color:var(--accent);font:700 16px var(--f-body);padding:10px 6px;cursor:pointer}
+.ld-hero{display:grid;grid-template-columns:1fr;gap:22px;align-items:center;padding:22px 0 8px}
+.ld-eye{display:inline-block;font-size:13px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
+.landing h1{font:700 34px/1.08 var(--f-display);letter-spacing:-.02em;margin:0 0 14px}
+.landing h1 em,.ld-final em{font-style:normal;color:var(--accent)}
+.ld-copy p{font-size:17px;line-height:1.5;color:var(--muted);margin:0 0 20px}
+.ld-cta{display:flex;flex-direction:column;gap:10px}
+.ld-cta .btn{width:100%}
+.ld-facts{display:flex;flex-wrap:wrap;gap:8px 16px;list-style:none;padding:0;margin:16px 0 0;font-size:14px;font-weight:700;color:var(--muted)}
+.ld-facts li::before{content:"✓ ";color:var(--accent)}
+.ld-shot{display:flex;justify-content:center}
+.ld-shot img{width:min(300px,78vw);height:auto;filter:drop-shadow(0 30px 50px var(--shadow))}
+.ld-h2{font:700 26px/1.15 var(--f-display);letter-spacing:-.01em;margin:44px 0 16px}
+.ld-lead{color:var(--muted);font-size:16px;margin:-6px 0 16px}
+.ld-grid{display:grid;grid-template-columns:1fr;gap:12px}
+.ld-card{padding:18px 18px 16px;border-radius:var(--Rb,22px);background:var(--surface);box-shadow:inset 0 0 0 1px var(--line)}
+.ld-card .ico{color:var(--accent);display:block;margin-bottom:10px}
+.ld-card h3{font:700 18px/1.25 var(--f-body);margin:0 0 6px}
+.ld-card p{margin:0;font-size:15px;line-height:1.45;color:var(--muted)}
+.ld-row{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:6px 2px 10px;margin:18px -20px 0;padding-left:20px;padding-right:20px}
+.ld-row figure{margin:0;flex:0 0 auto;width:min(200px,52vw);scroll-snap-align:center;text-align:center}
+.ld-row img{width:100%;height:auto;filter:drop-shadow(0 18px 26px var(--shadow))}
+.ld-row figcaption{font-size:14px;font-weight:700;color:var(--muted);margin-top:6px}
+.ld-steps{list-style:none;counter-reset:s;padding:0;margin:0;display:grid;gap:10px}
+.ld-steps li{counter-increment:s;display:grid;grid-template-columns:44px 1fr;column-gap:12px;align-items:start;padding:14px 16px;border-radius:var(--Rm,16px);background:var(--surface);box-shadow:inset 0 0 0 1px var(--line)}
+.ld-steps li::before{content:counter(s);grid-row:span 2;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font:800 18px var(--f-body);background:var(--accent);color:var(--accent-fg)}
+.ld-steps b{font-size:17px}
+.ld-steps span{color:var(--muted);font-size:15px}
+.ld-note{margin-top:28px;padding:16px 18px;border-radius:var(--Rm,16px);background:var(--accent-soft);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 45%,transparent);font-size:15px;line-height:1.5}
+.ld-faq details{border-bottom:1px solid var(--line);padding:14px 2px}
+.ld-faq summary{cursor:pointer;font-weight:700;font-size:16.5px;list-style:none;display:flex;justify-content:space-between;gap:10px}
+.ld-faq summary::after{content:"+";color:var(--accent);font-weight:800}
+.ld-faq details[open] summary::after{content:"−"}
+.ld-faq p{margin:8px 0 0;color:var(--muted);font-size:15px;line-height:1.5}
+.ld-faq a,.ld-foot a{color:var(--accent)}
+.ld-final{margin-top:44px;padding:28px 20px;border-radius:var(--Rb,24px);background:var(--surface);box-shadow:inset 0 0 0 1px var(--line);text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px}
+.ld-final h2{font:700 26px/1.15 var(--f-display);margin:0 0 6px}
+.ld-final .btn{width:min(100%,360px)}
+.ld-foot{margin-top:30px;text-align:center;font-size:14px;color:var(--muted)}
+.ld-by{margin-top:8px}.ld-by i{font:italic 600 16px Georgia,serif;color:var(--fg)}
+.ld-sticky{position:fixed;left:0;right:0;bottom:0;padding:12px 16px max(12px,env(safe-area-inset-bottom));background:linear-gradient(transparent,var(--bg) 35%);z-index:2}
+@media (min-width:820px){
+  .ld-hero{grid-template-columns:1.15fr .85fr;padding-top:40px}
+  .landing h1{font-size:52px}
+  .ld-cta{flex-direction:row}.ld-cta .btn{width:auto}
+  .ld-grid{grid-template-columns:repeat(3,1fr)}
+  .ld-row{justify-content:center;overflow:visible;margin:18px 0 0}
+  .ld-steps{grid-template-columns:repeat(3,1fr)}
+  .ld-sticky{display:none}
+  .ld-in{padding-bottom:60px}
+}
+@media (prefers-reduced-motion:reduce){.landing,.landing.out{animation:none}}
 
 /* ===== Семейства тем. Идёт после skin.css. «glass» — прежний стеклянный вид, его не трогаем.
    Остальные семейства задают форму: скругления, рамки, тени, свечение, регистр заголовков. ===== */
@@ -1154,6 +1231,84 @@ html[data-fam=kosmos] .fx::after{width:64vmin;height:64vmin;right:-18vmin;bottom
 </style>
 </head>
 <body data-screen="cal">
+<section id="landing" class="landing" hidden aria-label="О приложении WeMed">
+  <div class="ld-in">
+    <header class="ld-top">
+      <span class="ld-brand"><img src="icon-192.png" alt="" width="40" height="40">WeMed</span>
+      <button type="button" class="ld-link" data-land="in">Войти</button>
+    </header>
+
+    <div class="ld-hero">
+      <div class="ld-copy">
+        <span class="ld-eye">Планнер для студентов-медиков</span>
+        <h1>Пары, смены, отработки и долги — <em>в одном приложении</em></h1>
+        <p>Календарь, задачи, расписание, оценки, привычки и финансы. Всё, что обычно держится в голове, — на одном экране.</p>
+        <div class="ld-cta">
+          <button type="button" class="btn big" data-land="up">Создать аккаунт — бесплатно</button>
+          <button type="button" class="btn ghost big" data-land="try">Попробовать без регистрации</button>
+        </div>
+        <ul class="ld-facts"><li>Без рекламы</li><li>Сайт и Telegram</li><li>Работает без интернета</li></ul>
+      </div>
+      <div class="ld-shot"><img src="landing/home.webp" alt="Главный экран WeMed: календарь месяца" width="352" height="720" loading="eager"></div>
+    </div>
+
+    <h2 class="ld-h2">Что умеет WeMed</h2>
+    <div class="ld-grid">
+      <article class="ld-card"><svg class="ico" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect class="f" x="3.5" y="5" width="17" height="15.5" rx="4"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg><h3>Весь месяц на одном экране</h3><p>Занятия, смены, экзамены и дедлайны подсвечены цветом — сразу видно, где свободно, а где завал.</p></article>
+      <article class="ld-card"><svg class="ico" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect class="f" x="9" y="3" width="6" height="12" rx="3"/><path d="M5.5 11a6.5 6.5 0 0013 0M12 17.5V21"/></svg><h3>Быстрая запись</h3><p>Пишите как в мессенджере: «завтра сдать отчёт» — дата и раздел определятся сами. Можно голосом.</p></article>
+      <article class="ld-card"><svg class="ico" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect class="f" x="4" y="3" width="16" height="18" rx="4.6"/><path d="M8.2 9.2l1.4 1.4 2.6-2.8M14.2 9.8h2.6M8.2 15.2l1.4 1.4 2.6-2.8M14.2 15.8h2.6"/></svg><h3>Задачи без хаоса</h3><p>На день, неделю и месяц. Срочное и важное — сверху, прогресс дня на виду.</p></article>
+      <article class="ld-card"><svg class="ico" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="f" d="M2.5 9.2L12 4.6l9.5 4.6-9.5 4.6-9.5-4.6z"/><path d="M6.6 11.7v4.3c0 1.4 2.5 2.9 5.4 2.9s5.4-1.5 5.4-2.9v-4.3M21.5 9.2v5"/></svg><h3>Учёба и отработки</h3><p>Расписание с чётными и нечётными неделями, долги и отработки, оценки по предметам.</p></article>
+      <article class="ld-card"><svg class="ico" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="f" d="M12 2.8c.8 3.2 5.2 5 5.2 10.2a5.2 5.2 0 01-10.4 0c0-2.1 1-3.6 2.2-4.8.3 1.6 1 2.5 2 3 .2-3 .1-5 1-8.4z"/></svg><h3>Привычки, спорт, фокус</h3><p>Отмечайте привычки, ведите тренировки и занимайтесь по таймеру помодоро.</p></article>
+      <article class="ld-card"><svg class="ico" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect class="f" x="3" y="5.5" width="18" height="14" rx="4.2"/><path d="M3 10.2h18"/><circle cx="16.6" cy="14.7" r="1.15" fill="currentColor" stroke="none"/></svg><h3>Финансы студента</h3><p>Доходы, расходы и лимит на месяц. Подскажет, сколько можно тратить в день.</p></article>
+    </div>
+
+    <div class="ld-row">
+      <figure><img src="landing/quick.webp" alt="Быстрая запись" width="352" height="720" loading="lazy"><figcaption>Быстрая запись</figcaption></figure>
+      <figure><img src="landing/study.webp" alt="Расписание пар" width="352" height="720" loading="lazy"><figcaption>Учёба</figcaption></figure>
+      <figure><img src="landing/money.webp" alt="Финансы" width="352" height="720" loading="lazy"><figcaption>Финансы</figcaption></figure>
+    </div>
+
+    <h2 class="ld-h2">33 темы оформления</h2>
+    <p class="ld-lead">От спокойных до дерзких: Красный код, Самурай, Ночная сакура, Гжель, Хохлома, Космос и другие — с рисунком на фоне.</p>
+    <div class="ld-row ld-themes">
+      <figure><img src="landing/t_kod.webp" alt="Тема «Красный код»" width="352" height="720" loading="lazy"><figcaption>Красный код</figcaption></figure>
+      <figure><img src="landing/t_samurai.webp" alt="Тема «Самурай»" width="352" height="720" loading="lazy"><figcaption>Самурай</figcaption></figure>
+      <figure><img src="landing/t_sakura.webp" alt="Тема «Ночная сакура»" width="352" height="720" loading="lazy"><figcaption>Ночная сакура</figcaption></figure>
+    </div>
+
+    <h2 class="ld-h2">Как начать</h2>
+    <ol class="ld-steps">
+      <li><b>Создайте аккаунт</b><span>По почте или через Telegram — меньше минуты.</span></li>
+      <li><b>Внесите расписание и смены</b><span>Пары по чётным и нечётным неделям, дежурства, зачёты.</span></li>
+      <li><b>Живите по плану</b><span>Записи синхронизируются между сайтом и Telegram-ботом.</span></li>
+    </ol>
+
+    <div class="ld-note">
+      <b>WeMed — первая версия.</b> Мы постоянно улучшаем приложение и переносим его на российские сервисы. Ваши записи при переезде сохранятся. Идеи и замечания — прямо в приложении: «Ещё» → «Замечания и предложения».
+    </div>
+
+    <h2 class="ld-h2">Вопросы</h2>
+    <div class="ld-faq">
+      <details><summary>Это правда бесплатно?</summary><p>Да. Все функции доступны бесплатно, без рекламы.</p></details>
+      <details><summary>Можно без регистрации?</summary><p>Можно: записи будут храниться только в этом браузере. С аккаунтом они сохраняются в облаке и доступны на всех устройствах и в Telegram.</p></details>
+      <details><summary>Где хранятся мои данные?</summary><p>На устройстве и, если вы вошли в аккаунт, в облачной базе. Сейчас серверы находятся за рубежом — мы переносим их в Россию. Подробно — в <a href="privacy.html" target="_blank" rel="noopener">политике обработки данных</a>.</p></details>
+      <details><summary>Как удалить аккаунт?</summary><p>В профиле: «Удалить аккаунт». Перед этим можно скачать все свои записи файлом.</p></details>
+      <details><summary>Есть приложение для телефона?</summary><p>Сайт устанавливается на главный экран как приложение (кнопка «Установить» или «На экран Домой» в браузере). Ещё есть Telegram-бот <a data-botlink href="https://t.me/wemedd_bot" target="_blank" rel="noopener">@wemedd_bot</a>.</p></details>
+    </div>
+
+    <div class="ld-final">
+      <h2>Начните сегодня — <em>это бесплатно</em></h2>
+      <button type="button" class="btn big" data-land="up">Создать аккаунт</button>
+      <button type="button" class="ld-link" data-land="in">У меня уже есть аккаунт</button>
+    </div>
+
+    <footer class="ld-foot">
+      <a href="privacy.html" target="_blank" rel="noopener">Политика обработки данных</a> · <a href="consent.html" target="_blank" rel="noopener">Согласие</a> · <a data-botlink href="https://t.me/wemedd_bot" target="_blank" rel="noopener">Telegram-бот</a>
+      <div class="ld-by">Создатель — <i>Kirill Berngardt</i></div>
+    </footer>
+  </div>
+  <div class="ld-sticky"><button type="button" class="btn big block" data-land="up">Создать аккаунт — бесплатно</button></div>
+</section>
 <div class="fx" aria-hidden="true"></div>
 
 <div class="app" id="app">
@@ -2243,18 +2398,23 @@ function renderMoreSheet(){
   return '<div class="sh-head"><h2 class="h sm">Разделы</h2><button type="button" class="btn ghost sm" data-close>Закрыть</button></div>'
    +'<div class="more-grid">'+MORE_IDS.map(function(id){var m=homeMetric(id),mt=HOME_META[id];return '<button type="button" class="more-row" data-morego="'+id+'"'+(ui.screen===id?' aria-current="page"':'')+'>'+IC(mt.i,26,1.7)+'<b>'+mt.n+'</b><small>'+esc(m.v)+' · '+esc(m.s)+'</small></button>'}).join('')+'</div>'
    +'<div class="more-line"><button type="button" class="btn ghost" data-moreact="pal">'+IC('palette',18,1.8)+' Оформление</button><button type="button" class="btn ghost" data-moreact="ac">'+IC('user',18,1.8)+' Профиль</button></div>'
-   +'<button type="button" class="btn block" data-fbopen>'+IC('chat',18,1.8)+' Замечания и предложения</button>'+legalRow();
+   +'<button type="button" class="btn block" data-fbopen>'+IC('chat',18,1.8)+' Замечания и предложения</button>'
+   +($('#landing')?'<button type="button" class="btn ghost block" data-landopen style="margin-top:10px">'+IC('spark',18,1.8)+' О приложении</button>':'')
+   +legalRow()+authorSign();
 }
 function openMore(){ui.sheet='more';renderDaySheet();showOverlay('dayOv',null)}
 
 /* ---------- согласие, «первая версия», замечания и предложения, выгрузка данных ---------- */
-var PDC_V='2026-10-15',APP_VER='2026.10.15';
+var PDC_V='2026-10-15',APP_VER='2026.10.17',AUTHOR='Kirill Berngardt';
+/* подпись создателя: внизу «Ещё» — с росчерком, в окне «первая версия» — строкой */
+function authorSign(){return '<div class="author" role="note"><span class="au-k">Создатель WeMed</span><b class="au-n">'+AUTHOR+'</b><svg class="au-s" viewBox="0 0 220 18" aria-hidden="true"><path pathLength="1" d="M4 12 C40 4 70 16 104 9 S170 3 216 10"/></svg><span class="au-v">версия '+APP_VER+'</span></div>'}
+function authorLine(){return '<small class="by">Создатель — '+AUTHOR+'</small>'}
 function cfgGet(){return (typeof CFG==='object'&&CFG)||window.WEMED_CONFIG||{}}
 /* документы лежат на сайте; бот открывает их по полному адресу сайта */
 function legalUrl(p){var c=cfgGet();return (TRK.plat==='bot'?String(c.SITE_URL||'https://brngrdt.github.io/wemed_site/').replace(/\/?$/,'/'):'')+p}
 function pdcBox(id,on){return '<label class="pdc"><input type="checkbox" id="'+id+'"'+(on?' checked':'')+'><span>Я даю <a href="'+legalUrl('consent.html')+'" target="_blank" rel="noopener">согласие на обработку персональных данных</a> и принимаю <a href="'+legalUrl('privacy.html')+'" target="_blank" rel="noopener">политику обработки данных</a></span></label>'}
 function legalRow(){return '<p class="legal"><a href="'+legalUrl('privacy.html')+'" target="_blank" rel="noopener">Политика обработки данных</a> · <a href="'+legalUrl('consent.html')+'" target="_blank" rel="noopener">Согласие</a></p>'}
-function betaNote(){return '<div class="beta" role="note"><b>WeMed — первая версия</b><span>Мы постоянно улучшаем приложение и переносим его на российские сервисы: серверы в России, вход через Яндекс ID и VK ID. Ваши записи при переезде сохранятся. Нашли ошибку или есть идея — напишите нам.</span><button type="button" class="linkbtn" data-fbopen>Замечания и предложения →</button></div>'}
+function betaNote(){return '<div class="beta" role="note"><b>WeMed — первая версия</b><span>Мы постоянно улучшаем приложение и переносим его на российские сервисы: серверы в России, вход через Яндекс ID и VK ID. Ваши записи при переезде сохранятся. Нашли ошибку или есть идея — напишите нам.</span>'+authorLine()+'<button type="button" class="linkbtn" data-fbopen>Замечания и предложения →</button></div>'}
 
 function openFb(){if(openOv)closeOverlay();ui.fb=ui.fb||{kind:'idea',body:'',contact:'',busy:false,msg:'',mk:'',sent:false};ui.fb.sent=false;ui.fb.msg='';
   /* контакт для ответа подставляем сами: почта аккаунта на сайте или ник в Telegram (можно стереть) */
@@ -2322,7 +2482,7 @@ function homeMove(id,dir,toggle){
 function renderCalScreen(){renderHome()}
 /* ---------- первый запуск ---------- */
 function maybeOnboard(){
-  if(S.prof.onb)return;
+  if(S.prof.onb||ui.landing||openOv)return;
   try{if(navigator.webdriver&&!localStorage.getItem('wemed.forceonb'))return}catch(e){}
   ui.ob={step:0,name:S.prof.name||''};renderOb();showOverlay('obOv','#obName');
 }
@@ -2878,9 +3038,11 @@ function closeOverlay(){
   if(openOv==='qaOv')voiceStop();
   if(openOv==='obOv'&&!S.prof.onb)setProf('onb',1);
   if(openOv==='dayOv'){flushNote();ui.sheet=null}
+  var was=openOv;
   $('#'+openOv).hidden=true;openOv=null;document.documentElement.style.overflow='';
   if(lastFocus&&lastFocus.focus&&document.contains(lastFocus))try{lastFocus.focus()}catch(e){}
   refresh();
+  if(was==='acOv'&&typeof ui.afterAc==='function'){var fn=ui.afterAc;ui.afterAc=null;setTimeout(fn,250)}   // после входа с посадочной — знакомство
 }
 
 
@@ -4084,6 +4246,37 @@ function doSignOut(){
 }
 function openAccount(){renderAccount();showOverlay('acOv',ui.account_focus||null)}
 
+/* ---------- посадочная страница: новый посетитель сначала видит, что такое WeMed, потом регистрация ---------- */
+function landingWanted(){
+  if(!$('#landing'))return false;
+  if(/[?&]about\b/.test(location.search))return true;                       // ссылка из рекламы: ?about — показать всем
+  if(/access_token|type=|error|[?&]code=|tg=/.test(location.hash+location.search))return false;  // возврат из письма или Telegram
+  try{if(localStorage.getItem('wemed.landed'))return false;if(navigator.webdriver&&!localStorage.getItem('wemed.forcelanding'))return false}catch(e){}
+  return !S.prof.onb;
+}
+function showLanding(){
+  var l=$('#landing');if(!l)return;
+  if(openOv)closeOverlay();
+  ui.landing=true;l.hidden=false;l.scrollTop=0;document.documentElement.classList.add('landing-on');
+  try{l.querySelectorAll('[data-botlink]').forEach(function(a){if(CFG.TG_BOT&&/^[A-Za-z0-9_]{4,40}$/.test(CFG.TG_BOT)){a.href='https://t.me/'+CFG.TG_BOT;if(a.textContent.charAt(0)==='@')a.textContent='@'+CFG.TG_BOT}})}catch(e){}
+  try{trkAct('landing')}catch(e){}
+}
+function hideLanding(then){
+  var l=$('#landing');try{localStorage.setItem('wemed.landed','1')}catch(e){}
+  if(!l||l.hidden){ui.landing=false;if(then)then();return}
+  l.classList.add('out');
+  setTimeout(function(){l.hidden=true;l.classList.remove('out');document.documentElement.classList.remove('landing-on');ui.landing=false;if(then)then()},260);
+}
+function landGo(k){
+  if(k==='try'){hideLanding(function(){setTimeout(maybeOnboard,150)});return}
+  hideLanding(function(){
+    if(!SB){maybeOnboard();return}                                            // облако не настроено — сразу знакомство
+    ui.ac.mode=k==='in'?'in':'up';ui.ac.step='';ui.ac.msg='';
+    ui.afterAc=function(){if(!user||!S.prof.onb)maybeOnboard()};             // после окна входа — имя и стиль
+    openAccount();
+  });
+}
+
 
 
 
@@ -4243,6 +4436,7 @@ document.addEventListener('click',function(e){
   if((el=t.closest('[data-tmenu]'))){buzz();openTaskActs(el.dataset.tmenu);return}
   if(t.closest('[data-overall]')){ui.overAll=true;renderTasks();return}
   if(t.closest('[data-fbopen]')){buzz();openFb();return}
+  if(t.closest('[data-landopen]')&&typeof showLanding==='function'){showLanding();return}
   if((el=t.closest('[data-fbkind]'))){var ft=$('#fbText'),fc=$('#fbContact');if(ft)ui.fb.body=ft.value;if(fc)ui.fb.contact=fc.value;ui.fb.kind=el.dataset.fbkind;renderDaySheet();return}
   if(t.closest('#fbSend')){fbSend();return}
   if(t.closest('[data-fbnew]')){ui.fb.sent=false;renderDaySheet();var nt2=$('#fbText');if(nt2)nt2.focus();return}
@@ -4313,6 +4507,7 @@ document.addEventListener('click',function(e){
   if((el=t.closest('[data-hbdays]'))){ui.hb.form.days=el.dataset.hbdays===''?null:+el.dataset.hbdays;ui.hb.form.daysSet=true;renderRhythmSheet();return}
   if(t.closest('[data-hbsave]')){saveHabit();return}
   if(t.closest('[data-hbdel]')){deleteHabit(ui.hb.form.id);return}
+  if((el=t.closest('[data-land]'))){landGo(el.dataset.land);return}
   if(t.closest('#acBtn')||t.closest('[data-acopen]')){openAccount();return}
   if((el=t.closest('[data-acdel]'))){acDelete(el);return}
   if(t.closest('[data-pdcok]')){var p2=$('#acPdc2');if(!p2||!p2.checked){acNote('Отметьте галочку согласия.','bad');return}pdcRemember();consentSync(true);acMsg('Спасибо, согласие сохранено.','ok');return}
@@ -4552,6 +4747,7 @@ if(SB){
   if(/type=(signup|email_change)/.test(_hs))ui.welcomeToast=true;
   if(/error_code=|error=access_denied/.test(_hs))setTimeout(function(){ui.ac.mode='in';openAccount();acMsg('Ссылка из письма устарела или уже использована. Войдите с паролем или запросите письмо ещё раз.','bad')},400);
 }
+if(landingWanted())showLanding();
 if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})})}
 try{if(CFG.GC&&/^[a-z0-9-]+$/i.test(CFG.GC)){var gs=document.createElement('script');gs.async=true;gs.setAttribute('data-goatcounter','https://'+CFG.GC+'.goatcounter.com/count');gs.src='https://gc.zgo.at/count.js';document.head.appendChild(gs)}}catch(e){}
 
